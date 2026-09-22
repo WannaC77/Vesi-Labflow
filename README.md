@@ -97,7 +97,7 @@ python tools/stats_pipeline.py --selftest       # 统计管线（含配对用例
 python scripts/selftest_scripts.py              # 交付门禁脚本元自检
 ```
 
-约定：全 PASS / SKIP 即 rc=0；**SKIP 不算 FAIL**（但须写明缺件原因）；FAIL 非零退出，必须处理。退出码语义统一为 `0` 通过 · `1` 失败 · `2` 用法错误。
+约定：全 PASS / SKIP 即 rc=0；**SKIP 不算 FAIL**（但须写明缺件原因）；FAIL 非零退出，必须处理。退出码语义统一为 `0` 通过 · `1` 失败 · `2` 用法错误 · `3` 依赖缺失未执行（全链 `SKIP`，非通过）。
 
 ## L2 自建（不随包分发）
 

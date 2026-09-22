@@ -36,9 +36,11 @@ python tools/<领域工具>.py --selftest        # nca / compartment_fit / relea
 python scripts/<checker>.py <args>           # exit 0=PASS 1=FAIL 2=usage
 ```
 
-- 所有脚本：**无用户绝对路径**；`--help` 可用；依赖见 `requirements.txt`
+- 所有脚本：**无用户绝对路径**；`--help` 可用（rc=0）；依赖见 `requirements.txt`
 - 门禁脚本**必须可失败**（自检里带反例）；`--selftest` 用于验证工具自身
-- 退出码语义：`0` 通过 · `1` 失败 · `2` 用法错误
+- 退出码语义：`0` 通过 · `1` 失败 · `2` 用法错误 · `3` 依赖缺失未执行（全链 `SKIP`，**非通过**）
+- 自检产物落盘：`tools/_smoke_out/`（已 `.gitignore`，可安全删除）；只读场景请在副本中执行
+- 解释器：任一 Python 3.11+；多个解释器时脚本自探测依赖最全者（不写死路径）
 
 ## 4. 降级约定（诚实性要求）
 
@@ -47,7 +49,7 @@ python scripts/<checker>.py <args>           # exit 0=PASS 1=FAIL 2=usage
 | OCR / 视觉能力 | 记录转写走人工，标 `[降级]`；不伪造识别结果 |
 | Word COM（Windows 专有） | 文档生成改 Markdown / 手工另存；标 `[降级]` |
 | LaTeX / CJK 字体 | 论文产出 `.tex` + 编译说明；图注改英文 |
-| 依赖（numpy / scipy / matplotlib …） | 回退系统 Python 并声明版本；相关自检记 `SKIP` |
+| 依赖（numpy / scipy / matplotlib …） | 回退系统 Python 并声明版本；相关自检记 `SKIP`；全链前置（numpy）缺失时 `smoke_chain` 返 **rc=3**（未执行，非通过） |
 
 **禁止**：假装成功、伪造数值、把 SKIP 写成 PASS。
 

@@ -13,7 +13,7 @@
 图注四要素：图号+标题｜内容描述（n 与统计）｜方法/条件｜缩写与统计说明。模板：`templates/图注模板.md`。样例代码：`tools/fig_samples/`（style_vesi + 6 图型）。
 
 ## 装载 / Loading（指针，细节在正本）
-`workflows/08`（图型规范节）；`tools/fig_samples/`；`templates/图注模板.md`；跨系统参考 `数模/templates-library/utils/plot_style.py`
+`workflows/08`（图型规范节）；`tools/fig_samples/`；`templates/图注模板.md`
 
 ## 门禁 / Gates
 三闸：audit_fig（越界检测）/ figcheck（文件层）/ vision 复核（无 vision 则双闸+人检）；轴标签英文或已验证中文字体；误差棒=SD 并声明

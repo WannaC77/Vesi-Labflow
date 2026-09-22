@@ -3,7 +3,7 @@
 > **用途 / Purpose**：以「实验 → 数据 → 证据链」为中心的科研生成引擎（生命科学 / 纳米制剂 / 目标赛道-目标赛道-生科三轨；人机混编 HITL）。
 > **装载 / Mount**：任何可读文件 + 跑 Python 的人或 agent 按 §0 三步装载；不依赖任何 agent 私有机制。
 > **正本 / SSOT**：细节正本在 `workflows/` 与各模块规格件；**本文件只索引，不复制正文**。
-> **版本 / Version**：v1.1（2026-09-22）· 模块 11 + 底座 · 执行方：任何可读文件 + 跑 Python 者（无私有依赖）
+> **版本 / Version**：v1.2（2026-09-22）· 模块 11 + 底座 · 执行方：任何可读文件 + 跑 Python 者（无私有依赖）
 > **分层 / Layers**：L0 领域能力（本文件 · `modules/` · `templates/` · `tools/` · `references/`）｜L1 配置剖面（`VESI-CORE.md` 轨道开关节 + 轨侧 `track-config.md`）｜L2 本机协作（PERSONAS / junction / 个人台账与锚——只读引用，**不进 L0 必载**）
 > **开源兼容**：本文件全部路径为系统根相对；L0 不依赖个人校准数值；profile 可拆（轨道/赛事参数在 L1）。
 
@@ -15,14 +15,14 @@
 
 **环境自检**：`tools/env_check.py`（已落盘；`--selftest` 可自证；档位 T0/T1/T2）；链级冒烟 `tools/smoke_chain.py`。
 
-**路径基点（SSOT）**——本文件内路径均以**系统根**为基点（系统根 = ``、`目标赛道/`、`目标赛道/`、`候选药物 X目标赛道/` 的父目录；迁移时在新根下重建同名目录即可）：
+**路径基点（SSOT）**——本文件内路径均以**包根**为基点（包根 = 本文件所在目录；迁移时在新根下重建同名目录即可）：
 
 | 基点 | 覆盖 |
 |---|---|
-| `` | ENGINE · modules · templates · tools · references · workflows |
-| `候选药物 X目标赛道/` | `templates/申报书线/`（申报书线正本）· `<共享层>/` |
-| `目标赛道 A/B/C` 的轨道材料 | 赛轨侧 `scripts/` · `track-config.md`（赛道配置 / 校准台账，自建） |
-| `<共享层>/` | 协作协议 · 共享 scripts · anchors（L2） |
+| `./`（包根） | ENGINE · modules · templates · tools · references · workflows · scripts |
+| `templates/申报书线/` | 申报书线正本（流程件；内容件不入库） |
+| `scripts/` · `track-config.md` | 赛轨侧脚本 · 赛道配置 / 校准台账（自建） |
+| `kb/` | 知识库（空目录开局；L2 自建内容不入库） |
 
 ## 1 · 模块注册表（L0 · interface: loading → output → gates → fallback）
 
@@ -33,7 +33,7 @@
 | V-M3 | 记录线 RECORD | 照片/口述→结构化记录 | `workflows/12`；`scripts/transcribe_record.py` | 结构化实验记录 + 原始文件只读归档 | 字段齐；原始数据不可改；记录↔文件路径对应 | 口述+代录并标注执行者 |
 | V-M4 | 统计台 STAT ★ | 数据→可复核分析 | `workflows/08` | 分析报告 md + 图（走 M6） | 三证齐（正态证据 / 效应量+CI / 多重比较记录）；n=3 纪律；图闸 | 按 08 速查手工 + 声明 |
 | V-M5 | PK/领域台 ★ | NCA/房室/释放/排泄 | `workflows/05–07` | NCA / 房室 / 释放拟合 / 排泄累积 报告字段 | 参数完整+口径声明；拟合优度证据；包裹/游离质控要点 | 外部软件手工表 + 核对 |
-| V-M6 | 图件车间 FIG | 出版级图（三闸） | 图件规范；`数模/templates-library/utils/plot_style.py`（跨系统参考）；`workflows/08` 图型 | PNG+PDF+SVG + 图注 | audit / figcheck / vision 三闸（无 vision 则双闸+人检） | 代码出图 + 人工复核 |
+| V-M6 | 图件车间 FIG | 出版级图（三闸） | 图件规范；`tools/fig_samples/`（图件样例）· `templates/图注模板.md`；`workflows/08` 图型 | PNG+PDF+SVG + 图注 | audit / figcheck / vision 三闸（无 vision 则双闸+人检） | 代码出图 + 人工复核 |
 | V-M7 | 论文装配 PAPER | IMRaD→docx | `workflows/09`；`scripts/assert_delivery_hygiene.py` | 论文/章节 + 自查 + 引用表 | 逐节 checklist；Claim-Evidence；hygiene FAIL=0；**docx 禁令见故障卡（另存 styleId 回退）** | 纯文本/md 装配 + 门禁清单 |
 | V-M8 | 三轨改写 TRACK | 母版→目标轨 | `track-config.md`、`track-config.md` + CORE 轨道节 | 目标轨材料 | 匿名按目标轨重做；口径不串台；一稿多投禁令；数据单一正本 | 手工过改写卡 |
 | V-M9 | 申报与答辩 APPLY | 申报书/PPT/QA | `候选药物 X目标赛道/templates/申报书线/申报书写作工作流.md` | 申报书 / PPT / QA | 格式对标；六栏结构；自查表 | 纯 md 版 + 人检 |
@@ -90,22 +90,22 @@ M10 校准 ⇄ 各模块（L2 只读挂接，不进 L0 必载）
 | 行为测试最小集 | `references/behavioral-tests-minimal.md` | — | V-R | L0 既有 | ✅ |
 | 申报书线 | `候选药物 X目标赛道/templates/申报书线/`（申报书写作工作流 + 模板 + 生成脚本 + 一键生成工作流） | — | V-M9 | L0 既有 | ✅ |
 | 轨侧脚本（本仓 `scripts/`） | `scripts/`（交付门禁集：卫生断言 / 剂量换算 / 记录转写 / 元数据清理 / 跨文档一致性 / 自然度 / 重复预检 / 引用编号 / 包结构校验 / 元自检） | L0 既有 | ✅ |
-| 轨侧脚本·目标赛道 | `scripts/`（6 件：verify_track / consistency_check / naturalness_check / precheck_similarity / ref_numberizer / selftest_scripts） | — | V-M8/R | L0 既有 | ✅ |
+| 轨侧脚本（并轨件） | `scripts/`（15 件 .py：verify_bundle / consistency_check / naturalness_check / precheck_similarity / ref_numberizer / selftest_scripts / assert_delivery_hygiene / check_dose / clean_pdf_meta / crop_zoom / dump_docx_full / transcribe_record / tile_image / batch_ocr / delivery_gate_check） | — | V-M8/R | L0 既有 | ✅ |
 | 轨侧配置 | `track-config.md`、`track-config.md` | — | V-M8 | L1 轨侧 | ✅ |
 | 模块规格件 ×12 | `modules/V-M*/MODULE.md`（四件：目的/接口/门禁/降级） | v1.0 | 各模块 | L0 | ✅ |
 | 模板集 ×13 | `templates/`（精读笔记 / 证据表 / 设计卡×4 / 实验记录 / 图注 / Claim-Evidence / QA题库 / 申报-中期-结题映射 / 报告模板-排泄累积 / 报告模板-组织分布与靶向） | v1.0 | V-M1–M9 | L0 | ✅ |
 | 工具集 | `tools/`（env_check / stats_pipeline / smoke_chain / nca / compartment_fit / release_fit / fig_samples×8） | v1.0 | V-M4/M5/M6/R | L0 | ✅ |
 | 参考卡 ×6 | `references/`（检索式库 / 数据条目字典 / 论文装配SOP / 跨轨改写卡 / 引用格式卡 / 故障速查卡） | v1.0 | 各模块 | L0 | ✅ |
 
-## 6 · 环境卡（手工核 · env_check 落盘前）
+## 6 · 环境卡（以本机 `env_check` 实测为准）
 
-| 项 | 本机值 |
+| 项 | 值 |
 |---|---|
-| 系统 Python | 3.13（matplotlib / pymupdf / python-docx 可用） |
-| 数模 venv（跨系统参考） | `数模/<venv>`（3.11） |
+| 参考解释器 | Python 3.11+（推荐 3.13；`tools/env_check.py` 自探测依赖最全的解释器，不写死路径） |
+| 虚拟环境（可选） | 自建 `<venv>`；缺件时回退系统 Python 并按模块「降级」列声明 |
 | 可选件 | OCR 脚本（batch_ocr）/ Word COM（word_update_save_pdf）/ PDF 渲染（render_docx_pdf）——缺件按模块降级列声明 |
 
-> 本机实测档位：**T2**（2026-09-21 `env_check.py` 实测：核心 / 文档线 / 专业件全齐）。
+> **档位以本机 `env_check.py` 输出为准**：本卡不记录任何特定机器的实测值（T0/T1/T2 为连续达标口径——低档缺件会把整体档位压到该档；报告另给「分档可用性」逐档说明）。
 
 ## 7 · 交接卡模板（V-M11 · 模块版）
 
@@ -139,3 +139,4 @@ M10 校准 ⇄ 各模块（L2 只读挂接，不进 L0 必载）
 **变更记录**
 - v1.0（2026-09-21 · 生成侧强化批 2）：骨架建立（装载协议 / 模块注册 ×12 / 数据流 / 门禁矩阵 / runbooks / 资产清单 / 环境卡 / 交接卡 / 维护纪律）。
 - v1.1（2026-09-21 · 生成侧强化批 3 · 总装）：模块规格件 ×12 / 模板集 ×13 / 工具集（env_check · stats_pipeline · smoke_chain · nca · compartment_fit · release_fit · fig_samples）/ 参考卡 ×6 全部落盘并登记；门禁行挂接实路径；新增 §9 附录 A docx 管线卡；轨侧脚本 +check_dose。
+- v1.2（2026-09-22 · 开源发布批）：资产清单对齐（轨侧脚本件数与文件名、自检脚本指针改名同步）；吸收层回灌改为工作流内清单（手工过卡，不再指向独立脚本）；跨系统参考件 → 仓内件；§0 路径基点改为包根口径；环境卡改为以本机 env_check 实测为准；退出码补 `3`（依赖缺失未执行）。

@@ -13,7 +13,7 @@
   SC-3 consistency_check.py  数字差异纳入退出码（旧版非 --strict 时不失败）
   SC-4 precheck_similarity.py 近似复制检出（旧版 difflib 仅装饰、ratio 不参与判定）
   SC-5 precheck_similarity.py 整句复制 → exit 1（旧版发现 HIGH 仍 exit 0）
-  SC-6 verify_track.py        cond=False 必须失败（旧版照打 ✅、exit 0）
+  SC-6 verify_bundle.py       cond=False 必须失败（旧版照打 ✅、exit 0）
 
 用法:
   python selftest_scripts.py            # 全跑
@@ -29,7 +29,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PY = sys.executable
 TRACK_ROOT = HERE.parent                      # scripts/ → 目标赛道
-# 与本轨 verify_track.py 一致的根路径推断
+# 与本轨 verify_bundle.py 一致的根路径推断
 SAI_ROOT = TRACK_ROOT.parent                  # 目标赛道 → 比赛
 DATUAN_ROOT = SAI_ROOT / "候选药物 X目标赛道"
 

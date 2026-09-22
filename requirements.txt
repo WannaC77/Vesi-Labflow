@@ -1,7 +1,9 @@
+# 必需（T0 核心线：数值 / 统计；缺任一项 env_check 判「未达 T0」并 exit 1）
 numpy>=1.24,<3
 scipy>=1.10,<2
-matplotlib>=3.7,<4
+pandas>=2.0,<3
 # 可选（缺件时对应能力降级，见 THIRD-PARTY.md / AGENTS.md §4）
+matplotlib>=3.7,<4
 python-docx>=1.1,<2
 Pillow>=10,<12
-pandas>=2.0,<3
+# 按需自装（T1 文档线 / T2 专业件；缺件降级可走）：openpyxl · pymupdf · win32com

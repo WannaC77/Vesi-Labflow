@@ -14,7 +14,7 @@
 ## 三步装载
 
 1. 读本文件 → 读 `VESI-CORE.md` → 读 `VESI-ENGINE.md`
-2. 按任务选 runbook，加载对应 `workflows/NN-*.md` + `workflows/_SHARED.md`
+2. 按任务选 runbook，加载对应 `workflows/NN-*.md` + `workflows/_SHARED.md`（`NN` 为两位序号）
 3. 需要计算 / 门禁时调用 `tools/` 或 `scripts/`；缺件按模块表「降级」列执行并标 `[降级]`
 
 ## 指针
