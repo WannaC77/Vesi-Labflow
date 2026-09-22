@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-目标赛道轨 · 写作自然度质检（五指标）
+多赛道 · 写作自然度质检（五指标）
 
 方法思维借鉴开源 chinese-academic-paper-writing 的 ai_detector（连接词/句首重复/
 段落方差/禁用词量化），代码为本轨自研，纯标准库、零依赖。

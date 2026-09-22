@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-目标赛道轨 · 占位引用编号器
+多赛道 · 占位引用编号器
 
 方法思维借鉴开源 chinese-academic-paper-writing 的 ref_numberizer（占位引用法：
 写作期用 {ref1} 占位 → 定稿按「首次出现顺序」统一编号），代码为本轨自研，

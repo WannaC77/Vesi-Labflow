@@ -63,8 +63,9 @@ def resolve_root(arg_root):
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="verify_bundle.py", add_help=True)
     ap.add_argument("--root", default=None, help="仓根（缺省：脚本位置反推 / LABFLOW_ROOT）")
+    ap.add_argument("root_pos", nargs="?", default=None, help="仓根（位置参数写法，等价 --root；兼容 `verify_bundle.py .`）")
     a = ap.parse_args(argv)
-    root = resolve_root(a.root)
+    root = resolve_root(a.root or a.root_pos)
 
     check("仓根可定位", root.is_dir(), detail=str(root))
 

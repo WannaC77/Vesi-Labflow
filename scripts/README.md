@@ -13,7 +13,7 @@
 | `consistency_check.py` | 跨文档口径一致性（同一数字/术语在多件间不打架） | `python scripts/consistency_check.py <文件…>` |
 | `naturalness_check.py` | 自然度质检（去 AI 腔、模板腔） | `python scripts/naturalness_check.py <文件…>` |
 | `precheck_similarity.py` | 句级重复预检（投稿前自查） | `python scripts/precheck_similarity.py <文件…>` |
-| `verify_bundle.py` | 开源包结构自校验（目录/必需件/相对路径） | `python scripts/verify_bundle.py .` |
+| `verify_bundle.py` | 开源包结构自校验（目录/必需件/相对路径） | `python scripts/verify_bundle.py --root .` |
 | `selftest_scripts.py` | **元自检**：给上面的门禁脚本喂反例，证明它们真的会失败 | `python scripts/selftest_scripts.py` |
 
 ## 数据处理 / 记录链

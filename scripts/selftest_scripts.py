@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-目标赛道轨 · 校验器自检（selftest）
+多赛道 · 校验器自检（selftest）
 
 用途：证明三个校验脚本**真的能失败**。装饰性校验（记录条件却不使用）是本轨
 已发生过的缺陷族，本自检把"旧版缺陷必须可复现 + 新版必须拦截"固化为可复跑用例，
@@ -158,7 +158,7 @@ def _env_with_root(root: Path):
 def main(argv) -> int:
     only = argv[1] if len(argv) > 1 else None
     print("=" * 60)
-    print("目标赛道轨 · 校验器自检（证明校验器真的能失败）")
+    print("多赛道 · 校验器自检（证明校验器真的能失败）")
     print("=" * 60)
     with tempfile.TemporaryDirectory(prefix="wb_selftest_") as td:
         tmp = Path(td)

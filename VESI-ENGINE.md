@@ -21,7 +21,7 @@
 |---|---|
 | `` | ENGINE · modules · templates · tools · references · workflows |
 | `候选药物 X目标赛道/` | `templates/申报书线/`（申报书线正本）· `<共享层>/` |
-| `目标赛道/` · `目标赛道/` | 轨侧 `scripts/` · `vesi-track/`（track-config / 轨台账） |
+| `目标赛道 A/B/C` 的轨道材料 | 赛轨侧 `scripts/` · `track-config.md`（赛道配置 / 校准台账，自建） |
 | `<共享层>/` | 协作协议 · 共享 scripts · anchors（L2） |
 
 ## 1 · 模块注册表（L0 · interface: loading → output → gates → fallback）

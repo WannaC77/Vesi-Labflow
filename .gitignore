@@ -43,3 +43,7 @@ templates-library/data/*.png
 _smoke_out/
 **/_smoke_out/
 _tmp/
+
+# ── 生成物（脚本重跑即得）
+templates-library/utils/figkit/_out/
+templates-library/data/*.png
