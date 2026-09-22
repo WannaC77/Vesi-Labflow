@@ -1,0 +1,51 @@
+# s8-gate-v1.1.check.yaml（Phase B 已落 scripts/ · verify 脚本输入）
+# ⚠️ 2026-09-19 破坏性订正：pieces[].anchor_drift 语义按 §5.4.1 扩展为「可表达沿用态」。
+#    新增 anchor_drift_mode（必填枚举）+ anchor_review_last/round/age_rounds（沿用态必填）。
+#    校验伪码见 vesi-track/workflows/S8-模拟网评.md §5.4.1；未填 anchor_drift_mode → 该成绩单作废。
+# 用法: 复制本文件 → 按轮次填写各字段 → python scripts/s8_gate_v11_check.py <填写后的yaml>
+gate_version: "S8-GATE-v1.1"
+standard_version: "S8-STD-vN.M"          # 必填
+round_type: "WB独立复现轮"                # 枚举; 非此值 → 该成绩单不计入判定
+pieces:
+  - id: 综述
+    wb_score: null            # 百分制 去极值均分
+    p0_closed: null           # true/false
+    anchor: 84.0
+    anchor_drift_mode: null   # 枚举: 现场复评 | 沿用   ← 必填
+    anchor_drift: null        # 现场复评态: abs(本轮锚分 - 84.0) ≤ 3.0；沿用态: 允许 null
+    anchor_review_last: null  # 沿用态必填: 最近一次复评值
+    anchor_review_round: null # 沿用态必填: 复评来源轮次+日期
+    anchor_review_age_rounds: null  # 沿用态必填: 距上次复评的 WB 轮数; ≥3 → 须转现场复评
+  - id: 设计
+    wb_score: null
+    p0_closed: null
+    anchor: 88.0
+    anchor_drift_mode: null
+    anchor_drift: null
+    anchor_review_last: null
+    anchor_review_round: null
+    anchor_review_age_rounds: null
+  - id: 记录
+    wb_score: null
+    p0_closed: null
+anchor: 95.0              # 初值（经验值，须自行重校）
+    anchor_drift_mode: null
+    anchor_drift: null
+    anchor_review_last: null
+    anchor_review_round: null
+    anchor_review_age_rounds: null
+    record_fields: {篇数: null, 幕覆盖: null, 日期链: null, 上传合规率: null}
+  - id: 论文
+    wb_score: null
+    p0_closed: null
+anchor: 89.0              # 初值（经验值，须自行重校）
+    anchor_drift_mode: null
+    anchor_drift: null
+    anchor_review_last: null
+    anchor_review_round: null
+    anchor_review_age_rounds: null
+cross_doc:
+  s7_eight_items: null        # PASS/FAIL
+  paper_record_reconciliation: {覆盖率: null, 不过项: []}
+  cross_piece_p0: []
+hard_gates: {匿名: null, 查重率: null}     # 查重率 ≤ 20

@@ -1,0 +1,45 @@
+# ── Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ── 虚拟环境
+.venv/
+venv/
+env/
+
+# ── LaTeX 编译产物
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+
+# ── 编辑器 / 系统
+.vscode/
+.idea/
+*.swp
+*~
+Thumbs.db
+.DS_Store
+
+# ── 本地私有数据（自建 L2 层：不入库）
+kb/*
+!kb/README.md
+!kb/.gitkeep
+*.local.toml
+config.local.toml
+
+# ── 模板库生成图（目录保留，产物不入库）
+templates-library/data/*.png
+!templates-library/data/.gitkeep
+
+# ── 运行产物
+_smoke_out/
+**/_smoke_out/
+_tmp/

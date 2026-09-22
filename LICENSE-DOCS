@@ -1,0 +1,18 @@
+# 文档许可 · Documentation License
+
+本仓库中的**文档部分**（Markdown 说明、模板、方法论文档、图表文字等）采用
+**Creative Commons Attribution 4.0 International（CC BY 4.0）** 许可。
+
+You are free to:
+- **Share** — copy and redistribute the material in any medium or format
+- **Adapt** — remix, transform, and build upon the material for any purpose, even commercially
+
+Under the following terms:
+- **Attribution** — You must give appropriate credit, provide a link to the license, and indicate
+  if changes were made.
+
+许可全文（legal code）：https://creativecommons.org/licenses/by/4.0/legalcode
+
+> 说明：**代码部分**（`*.py`、CI 配置、脚本）适用根目录 `LICENSE`（MIT）。
+> 第三方件（LaTeX 类文件、引用的方法论文档等）适用其各自许可，见 `THIRD-PARTY.md`。
+> 引用的公开竞赛题目名称、赛事规则等归各自权利人所有。
