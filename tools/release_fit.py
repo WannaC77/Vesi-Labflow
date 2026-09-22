@@ -28,27 +28,31 @@
        薄膜（平板）为 0.5 与 1.0 —— 解读时须与制剂几何一致。
 
 输入
-    CSV 或 Excel，列名参数化：
+    CSV / TSV / Excel（.xlsx/.xls/.xlsm），列名参数化：
         --time 时间列；--release 单列；或 --rep 多重复列（逗号分隔，取均值±SD）
+    CSV/TSV 走标准库解析（编码回退 utf-8-sig → gb18030 → latin-1）；Excel 走 pandas
+    （该解释器缺 pandas/openpyxl 时明确报错并提示转存 CSV，不静默）。
 输出
     Markdown 报告（各模型参数、R²/R²adj、AIC、ΔAIC、排名、KP 指数释义、最佳模型推荐）；
     --json 输出 JSON。
 依赖
-    numpy / scipy / pandas（无 matplotlib）。
+    numpy / scipy（必需）；pandas 仅 Excel 输入时需要；不依赖 matplotlib。
 命令行示例
     python release_fit.py --selftest
     python release_fit.py --demo
     python release_fit.py --file release.csv --time time --release release
     python release_fit.py --file release.csv --time 时间 --rep R1,R2,R3
+    python release_fit.py --file release.tsv --time 时间 --release 释放率 --json
 """
 
 import argparse
+import csv
 import json
 import os
 import sys
+import tempfile
 
 import numpy as np
-import pandas as pd
 from scipy.optimize import curve_fit
 
 # ============ 默认参数区（在这里改 / 或用命令行覆盖）============
@@ -71,6 +75,9 @@ MAXFEV = 200000
 CBRT100 = 100.0 ** (1.0 / 3.0)  # 100^(1/3)，Hixson-Crowell 用
 VALID_FRACTION_PCT = 60.0       # Higuchi/KP/HC 的机理解释上限（前 60% 释放）
 EXCEL_EXTS = (".xlsx", ".xls", ".xlsm")
+TAB_EXTS = (".tsv", ".txt")     # 制表符分隔（标准库 csv 带 delimiter="\t" 解析）
+CSV_ENCODINGS = ("utf-8-sig", "gb18030", "latin-1")   # CSV/TSV 编码回退顺序
+NA_TOKENS = ("", "na", "nan", "n/a", "null", "none", "-")
 
 # Korsmeyer-Peppas 释放指数 n 释义表（圆柱/纤维几何阈值）
 KP_N_TABLE = (
@@ -80,6 +87,87 @@ KP_N_TABLE = (
     (0.895, float("inf"), "n > 0.89：Super Case-II 转运（加速溶蚀/侵蚀）"),
 )
 # ===============================================================
+
+
+# ------------------------------------------------------------------
+# 输入读取（标准库优先；无 pandas 亦可跑）
+# ------------------------------------------------------------------
+def _num(v):
+    """单元格 → float；空/NA 记号 → NaN；其余解析失败抛 ValueError。"""
+    if v is None:
+        return float("nan")
+    if isinstance(v, bool):
+        return float(v)
+    if isinstance(v, (int, float)):
+        return float(v)
+    s = str(v).strip()
+    if s.lower() in NA_TOKENS:
+        return float("nan")
+    return float(s)
+
+
+def _read_delimited(path, encoding="utf-8-sig"):
+    """读 CSV/TSV → (列名 list, 行 dict list)；编码按 CSV_ENCODINGS 回退。"""
+    ext = os.path.splitext(path)[1].lower()
+    sep = "\t" if ext in TAB_EXTS else ","
+    tried, last, raw = [], None, None
+    order = [encoding] + [e for e in CSV_ENCODINGS if e != encoding]
+    for enc in order:
+        tried.append(enc)
+        try:
+            with open(path, "r", encoding=enc, newline="") as f:
+                raw = list(csv.reader(f, delimiter=sep))
+            break
+        except (UnicodeDecodeError, UnicodeError) as exc:
+            last = exc
+    if raw is None:
+        raise SystemExit("[错误] 读入失败（已试编码 %s）：%s" % (tried, last))
+    if not raw:
+        raise SystemExit("[错误] 空文件：%s" % path)
+    cols = [str(c).strip() for c in raw[0]]
+    rows = []
+    for rec in raw[1:]:
+        if not any(str(x).strip() for x in rec):     # 跳过空行
+            continue
+        rows.append({cols[i]: (rec[i] if i < len(rec) else "") for i in range(len(cols))})
+    return cols, rows
+
+
+def load_table(path, encoding="utf-8-sig"):
+    """读 CSV/TSV/Excel → (列名 list, 行 dict list)。缺件不静默：Excel 无 pandas → 明确报错。"""
+    if not os.path.isfile(path):
+        raise SystemExit("[错误] 找不到输入文件：%s" % path)
+    ext = os.path.splitext(path)[1].lower()
+    if ext in EXCEL_EXTS:
+        try:
+            import pandas as pd                          # 惰性导入：仅 Excel 输入需要
+        except Exception as exc:                         # noqa: BLE001
+            raise SystemExit("[错误] 读取 Excel 需要 pandas + openpyxl（当前解释器不可用：%s）。"
+                             "[降级] 请把表另存为 CSV/TSV 后重跑（CSV 走标准库，无第三方依赖）。" % exc)
+        df = pd.read_excel(path)
+        df.columns = [str(c).strip() for c in df.columns]
+        return list(df.columns), df.to_dict("records")
+    return _read_delimited(path, encoding=encoding)
+
+
+def col_float(rows, col):
+    """取数值列 → np.ndarray；空/NA → NaN；非数值 → SystemExit（报数据序号）。"""
+    out = []
+    for i, r in enumerate(rows, start=1):
+        v = r.get(col)
+        try:
+            out.append(_num(v))
+        except ValueError:
+            raise SystemExit("[错误] 列 `%s` 第 %d 个数据值不是数值：%r" % (col, i, v))
+    return np.asarray(out, dtype=float)
+
+
+def rep_matrix(rows, rep_cols):
+    """多重复列 → (均值列, SD 列)；列数 = 1 时 SD 全为 NaN（与单列口径一致）。"""
+    mat = np.column_stack([col_float(rows, c) for c in rep_cols])
+    f = np.nanmean(mat, axis=1)
+    sd = np.nanstd(mat, axis=1, ddof=1) if mat.shape[1] > 1 else np.full(len(f), np.nan)
+    return f, sd
 
 
 # ------------------------------------------------------------------
@@ -344,8 +432,83 @@ def _synth(func, t, truth, cv=NOISE_CV, seed=SEED):
     return f * (1.0 + rng.normal(0.0, cv, size=len(t)))
 
 
+def _selftest_readers():
+    """输入读取路径自检（已知真值）：CSV/TSV 走标准库、列名映射、编码回退、非数值拦截。
+
+    返回失败项数（0 = 全绿）。全程不 import pandas —— 该断言即「pandas 可选」的机器证据。
+    """
+    n_fail = 0
+    t = np.array([1.0, 2.0, 4.0, 8.0])
+    r1 = np.array([12.0, 17.0, 24.0, 34.0])
+    r2 = np.array([14.0, 19.0, 26.0, 36.0])
+    truth = (r1 + r2) / 2.0                       # 多重复均值真值（精确值，无噪声）
+
+    def report(name, ok, detail):
+        nonlocal n_fail
+        n_fail += (not ok)
+        print("[%s] %s" % ("PASS" if ok else "FAIL", name))
+        print("        %s" % detail)
+
+    with tempfile.TemporaryDirectory(prefix="release_fit_io_") as d:
+        # ① CSV（UTF-8）：列名映射 + 多重复取均值
+        p_csv = os.path.join(d, "t1.csv")
+        with open(p_csv, "w", encoding="utf-8", newline="") as fh:
+            w = csv.writer(fh)
+            w.writerow(["time", "R1", "R2"])
+            for row in zip(t, r1, r2):
+                w.writerow(["%g" % v for v in row])
+        cols, rows = load_table(p_csv)
+        tt = col_float(rows, "time")
+        f_rep, sd_rep = rep_matrix(rows, ["R1", "R2"])
+        report("读取 CSV（列名映射 + 多重复均值）",
+               cols == ["time", "R1", "R2"] and np.allclose(tt, t) and np.allclose(f_rep, truth)
+               and np.allclose(sd_rep, np.std(np.column_stack([r1, r2]), axis=1, ddof=1)),
+               "列名 = %s | n = %d | 均值列最大偏差 = %.3g" % (cols, len(tt), float(np.max(np.abs(f_rep - truth)))))
+
+        # ② CSV 路径未引入 pandas（标准库解析的机器证据）
+        report("CSV 路径未引入 pandas（sys.modules 检查）", "pandas" not in sys.modules,
+               "pandas in sys.modules = %s（CSV/TSV 不需要它）" % ("pandas" in sys.modules))
+
+        # ③ TSV + GB18030 + 中文列名（首选编码读失败后须回退成功）
+        p_tsv = os.path.join(d, "t2.tsv")
+        with open(p_tsv, "w", encoding="gb18030", newline="") as fh:
+            fh.write("时间\t释放率\n")
+            for tv, fv in zip(t, truth):
+                fh.write("%g\t%g\n" % (tv, fv))
+        cols2, rows2 = load_table(p_tsv)
+        report("读取 TSV + GB18030 回退（中文列名）",
+               cols2 == ["时间", "释放率"] and np.allclose(col_float(rows2, "时间"), t)
+               and np.allclose(col_float(rows2, "释放率"), truth),
+               "列名 = %s | 释放率列最大偏差 = %.3g"
+               % (cols2, float(np.max(np.abs(col_float(rows2, "释放率") - truth)))))
+
+        # ④ 非数值单元格 → 明确报错（不静默当 0/NaN）
+        p_bad = os.path.join(d, "t3.csv")
+        with open(p_bad, "w", encoding="utf-8", newline="") as fh:
+            fh.write("time,release\n1,12\n2,abc\n")
+        _, rows3 = load_table(p_bad)
+        caught, msg = False, ""
+        try:
+            col_float(rows3, "release")
+        except SystemExit as exc:
+            caught, msg = True, str(exc)
+        report("非数值单元格 → 明确报错（不静默）", caught and "不是数值" in msg,
+               (msg.splitlines()[0] if msg else "未触发拦截（危险：非数值被静默吞掉）"))
+
+        # ⑤ 缺列 → 报错并列出实际列名（不猜）
+        caught, msg = False, ""
+        try:
+            if "释放率" not in cols:
+                raise SystemExit("[错误] 缺少释放率列 释放率；文件实际列名 = %s" % cols)
+        except SystemExit as exc:
+            caught, msg = True, str(exc)
+        report("缺列 → 报错并列出实际列名", caught and "实际列名" in msg,
+               (msg.splitlines()[0] if msg else "未触发拦截"))
+    return n_fail
+
+
 def selftest():
-    """known-answer：Higuchi k=20（t=1..12 h）参数回收 + AIC 排名第一。"""
+    """known-answer：Higuchi k=20（t=1..12 h）参数回收 + AIC 排名第一；另含读取路径自检。"""
     print("=" * 72)
     print("release_fit.py --selftest")
     print("合成真值：Higuchi k=20（t=1..12 h，噪声 0.1%）；附加：零级 k0=8、一级 k1=0.2")
@@ -386,6 +549,8 @@ def selftest():
         print(f"[{'PASS' if ok else 'FAIL'}] {name}")
         print(f"        实测 = {meas:.6f} | 真值 = {exp:.6f} | "
               f"相对误差 = {err:.4f}% (容差 {tol_pct}%)")
+    # 附加：输入读取路径（标准库 csv / pandas 可选）
+    n_fail += _selftest_readers()
     print("-" * 72)
     print("Higuchi 合成数据的 AIC 排名前 3：" + ", ".join(
         f"{r['model']}(AIC={r['aic']:.2f})" for r in
@@ -423,11 +588,12 @@ def build_parser():
     p = argparse.ArgumentParser(
         description="体外释放拟合（零级/一级/Higuchi/KP/Hixson-Crowell/Weibull）+ AIC 择优",
         formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--file", help="输入 CSV 或 Excel 路径")
+    p.add_argument("--file", help="输入 CSV / TSV / Excel 路径")
     p.add_argument("--time", default=DEFAULT_TIME_COL, help=f"时间列名（默认 {DEFAULT_TIME_COL}）")
     p.add_argument("--release", default=DEFAULT_REL_COL, help=f"释放率列名（默认 {DEFAULT_REL_COL}）")
     p.add_argument("--rep", default=None, help="多重复列名（逗号分隔），自动取均值 ± SD")
-    p.add_argument("--encoding", default="utf-8-sig", help="CSV 编码（默认 utf-8-sig）")
+    p.add_argument("--encoding", default="utf-8-sig",
+                   help="CSV/TSV 首选编码（默认 utf-8-sig，其后自动回退 gb18030 → latin-1）")
     p.add_argument("--json", action="store_true", help="输出 JSON")
     p.add_argument("--selftest", action="store_true", help="跑内置 known-answer 自测")
     p.add_argument("--demo", action="store_true", help="用合成数据跑一遍")
@@ -445,29 +611,23 @@ def main(argv=None):
         print("\n[提示] 需要 --file，或使用 --selftest / --demo")
         return 2
 
-    if not os.path.isfile(args.file):
-        raise SystemExit(f"[错误] 找不到输入文件：{args.file}")
-    df = pd.read_excel(args.file) if os.path.splitext(args.file)[1].lower() in EXCEL_EXTS \
-        else pd.read_csv(args.file, encoding=args.encoding)
-    df.columns = [str(c).strip() for c in df.columns]
-    if args.time not in df.columns:
-        raise SystemExit(f"[错误] 缺少时间列 {args.time}；文件实际列名 = {list(df.columns)}")
+    cols, rows = load_table(args.file, encoding=args.encoding)
+    if args.time not in cols:
+        raise SystemExit("[错误] 缺少时间列 %s；文件实际列名 = %s" % (args.time, cols))
 
     if args.rep:
         rep_cols = [c.strip() for c in args.rep.split(",") if c.strip()]
-        missing = [c for c in rep_cols if c not in df.columns]
+        missing = [c for c in rep_cols if c not in cols]
         if missing:
-            raise SystemExit(f"[错误] 缺少重复列 {missing}；文件实际列名 = {list(df.columns)}")
-        mat = df[rep_cols].to_numpy(dtype=float)
-        f = np.nanmean(mat, axis=1)
-        sd = np.nanstd(mat, axis=1, ddof=1) if mat.shape[1] > 1 else np.full(len(f), np.nan)
+            raise SystemExit("[错误] 缺少重复列 %s；文件实际列名 = %s" % (missing, cols))
+        f, sd = rep_matrix(rows, rep_cols)
     else:
-        if args.release not in df.columns:
-            raise SystemExit(f"[错误] 缺少释放率列 {args.release}；文件实际列名 = {list(df.columns)}")
-        f = df[args.release].to_numpy(dtype=float)
+        if args.release not in cols:
+            raise SystemExit("[错误] 缺少释放率列 %s；文件实际列名 = %s" % (args.release, cols))
+        f = col_float(rows, args.release)
         sd = np.full(len(f), np.nan)
 
-    t = df[args.time].to_numpy(dtype=float)
+    t = col_float(rows, args.time)
     keep = ~(np.isnan(t) | np.isnan(f))
     t, f, sd = t[keep], f[keep], sd[keep]
     if np.any(t < 0):
