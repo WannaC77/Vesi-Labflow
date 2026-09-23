@@ -76,12 +76,14 @@ def main():
 
     src = Path(args.md)
     if not src.exists():
-        sys.exit(f"文件不存在: {src}")
+        print(f"输入错误：文件不存在或不是普通文件 → {src}")
+        sys.exit(2)
     text = src.read_text(encoding="utf-8")
     fields, body = parse_frontmatter(text)
 
     if not fields:
-        sys.exit("⚠️ 该文件没有 YAML frontmatter——确认是内部版记录（见 S4 双层结构）？")
+        print("输入错误：该文件没有 YAML frontmatter——确认是内部版记录（见 S4 双层结构）？")
+        sys.exit(2)
 
     # 输出目录
     if args.out:

@@ -96,7 +96,7 @@
 
 ### 4.1 禁令：交付件禁止经 Word 另存
 
-**实测坑（生科轨 R3.5 复现，见 `目标赛道/S8-解冻批待办队列-2026-09-20.md` §一.3）**——Word 再保存会：
+**实测坑（内部复现记录；该待办件不随包分发）**——Word 再保存会：
 
 | # | 后果 | 影响 |
 |---|---|---|
@@ -123,8 +123,8 @@ python scripts/assert_delivery_hygiene.py <交付件1>.docx <交付件2>.docx
 
 # 带 md5 冻结核验：--expect <md5>=<路径>（可重复多个）
 python scripts/assert_delivery_hygiene.py \
-  候选药物 X目标赛道/05-论文/<交付件>.docx \
-  --expect <期望md5>=候选药物 X目标赛道/05-论文/<交付件>.docx
+  kb/<交付件>.docx \
+  --expect <期望md5>=kb/<交付件>.docx
 ```
 
 - **退出码**：`0` = 结构卫生项通过（若给了 `--expect` 则 md5 亦相符）；`1` = 有 FAIL；`2` = 未给参数（打印用法）。

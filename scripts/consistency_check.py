@@ -19,8 +19,11 @@ v1 相对 v0 的修复（2026-09-18）：
 
 用法:
   python consistency_check.py 申报书.md 论文.md 附件目录.md [文件4.md ...] [--loose]
+  python consistency_check.py --help
   输出: 逐字段全组比对报告；不一致时 exit 1（--loose 时数字差异降为提示）
+退出码: 0 = 全组一致；1 = 存在不一致；2 = 用法 / 输入错误（<2 份、文件不存在）
 """
+import argparse
 import re
 import sys
 from pathlib import Path
@@ -100,23 +103,27 @@ def compare(fields_list, names):
     return problems
 
 
-def main(argv) -> int:
-    loose = "--loose" in argv          # F2：草稿期可用 --loose 退回提示模式
-    strict = "--strict" in argv        # 兼容旧调用（v0 的 --strict 现为默认行为）
-    paths = [a for a in argv[1:] if not a.startswith("--")]
-    if len(paths) < 2:
-        print(__doc__)
-        return 1
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(prog="consistency_check.py",
+                                 description="三处口径一致性核验（申报书 / 论文 / 附件）")
+    ap.add_argument("paths", nargs="+", help="待比对文件（≥ 2 份）")
+    ap.add_argument("--loose", action="store_true", help="草稿期：数字差异降为提示（默认纳入失败判定）")
+    ap.add_argument("--strict", action="store_true", help="兼容旧调用（现为默认行为）")
+    a = ap.parse_args(argv)
+    if len(a.paths) < 2:
+        print("输入错误：至少需要 2 份文件（申报书 / 论文 / 附件目录）")
+        return 2
+    loose = a.loose                    # F2：草稿期可用 --loose 退回提示模式
     names, fields = [], []
-    for p in paths:
+    for p in a.paths:
         fp = Path(p)
-        if not fp.exists():
-            print(f"文件不存在: {p}")
-            return 1
+        if not fp.is_file():
+            print(f"输入错误：文件不存在或不是普通文件 → {p}")
+            return 2
         names.append(fp.name)
         fields.append(extract_fields(fp.read_text(encoding="utf-8", errors="ignore")))
 
-    print(f"===== 全组一致性核验（{len(paths)} 份）: {' vs '.join(names)} =====")
+    print(f"===== 全组一致性核验（{len(a.paths)} 份）: {' vs '.join(names)} =====")
     for n, f in zip(names, fields):
         print(f"\n[{n}]")
         for k in ("题目", "作者", "指导教师"):
@@ -126,7 +133,7 @@ def main(argv) -> int:
     problems = compare(fields, names)
     print("\n----- 比对结果 -----")
     if not problems:
-        print(f"✅ 全组一致（{len(paths)} 份：题目/署名无差异；均值±SD 数对全组齐备）")
+        print(f"✅ 全组一致（{len(a.paths)} 份：题目/署名无差异；均值±SD 数对全组齐备）")
         return 0
     bad = False
     for key, detail in problems:
@@ -142,4 +149,4 @@ def main(argv) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    sys.exit(main())

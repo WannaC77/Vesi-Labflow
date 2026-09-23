@@ -31,16 +31,14 @@ def main():
 
     src = Path(args.pdf)
     if not src.exists():
-        sys.exit(f"文件不存在: {src}")
+        print(f"输入错误：文件不存在或不是普通文件 → {src}")
+        sys.exit(2)
 
     try:
         from pypdf import PdfReader, PdfWriter
     except ImportError:
-        sys.exit(
-            "需要 pypdf。安装:\n"
-            "  uv pip install --python <venv>/python.exe pypdf\n"
-            "  (或: pip install pypdf)"
-        )
+        print("缺依赖：pypdf 未安装（pip install pypdf）→ 未执行（rc=3）")
+        sys.exit(3)
 
     out = Path(args.out) if args.out else src.with_name(src.stem + "_clean" + src.suffix)
 

@@ -1,9 +1,22 @@
-# 必需（T0 核心线：数值 / 统计；缺任一项 env_check 判「未达 T0」并 exit 1）
+# 依赖清单（分层；缺件按「降级」处理，见 AGENTS.md §4 / THIRD-PARTY.md）
+#
+# ── 必需：T0 核心线（数值 / 统计）
+#    缺任一项 → tools/env_check.py 判「未达 T0」并 exit 1（核心计算链不可用）
 numpy>=1.24,<3
 scipy>=1.10,<2
 pandas>=2.0,<3
-# 可选（缺件时对应能力降级，见 THIRD-PARTY.md / AGENTS.md §4）
-matplotlib>=3.7,<4
-python-docx>=1.1,<2
-Pillow>=10,<12
-# 按需自装（T1 文档线 / T2 专业件；缺件降级可走）：openpyxl · pymupdf · win32com
+#
+# ── 交付门禁线：scripts/ 交付前自检所需
+#    缺件时对应脚本返 rc=3（未执行，非通过）并提示装法；不阻塞数值链
+PyYAML>=6,<7          # scripts/delivery_gate_check.py（交付门禁模板解析）
+pypdf>=4,<7           # scripts/clean_pdf_meta.py（PDF 元数据清理）
+#
+# ── 可选：能力线（缺件时对应能力降级，见 THIRD-PARTY.md / AGENTS.md §4）
+matplotlib>=3.7,<4    # 图件
+python-docx>=1.1,<2   # Word 读写
+Pillow>=10,<12        # 图像裁剪 / 切块（scripts/crop_zoom.py · tile_image.py）
+#
+# ── 按需自装（T1 文档线 / T2 专业件；缺件降级可走）
+#    openpyxl（Excel 读写） · pymupdf（PDF 回读）
+#    pywin32（Windows 专有：Word COM 管线；tools/env_check.py 仅探测不强制，缺件走降级）
+pywin32>=306; sys_platform == "win32"

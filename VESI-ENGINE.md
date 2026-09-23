@@ -1,6 +1,6 @@
 # VESI-ENGINE — 生成引擎（模块注册 · 门禁 · runbook · 装载）
 
-> **用途 / Purpose**：以「实验 → 数据 → 证据链」为中心的科研生成引擎（生命科学 / 纳米制剂 / 目标赛道-目标赛道-生科三轨；人机混编 HITL）。
+> **用途 / Purpose**：以「实验 → 数据 → 证据链」为中心的科研生成引擎（生命科学 / 纳米制剂 / 多赛道并存；人机混编 HITL）。
 > **装载 / Mount**：任何可读文件 + 跑 Python 的人或 agent 按 §0 三步装载；不依赖任何 agent 私有机制。
 > **正本 / SSOT**：细节正本在 `workflows/` 与各模块规格件；**本文件只索引，不复制正文**。
 > **版本 / Version**：v1.2（2026-09-22）· 模块 11 + 底座 · 执行方：任何可读文件 + 跑 Python 者（无私有依赖）
@@ -36,7 +36,7 @@
 | V-M6 | 图件车间 FIG | 出版级图（三闸） | 图件规范；`tools/fig_samples/`（图件样例）· `templates/图注模板.md`；`workflows/08` 图型 | PNG+PDF+SVG + 图注 | audit / figcheck / vision 三闸（无 vision 则双闸+人检） | 代码出图 + 人工复核 |
 | V-M7 | 论文装配 PAPER | IMRaD→docx | `workflows/09`；`scripts/assert_delivery_hygiene.py` | 论文/章节 + 自查 + 引用表 | 逐节 checklist；Claim-Evidence；hygiene FAIL=0；**docx 禁令见故障卡（另存 styleId 回退）** | 纯文本/md 装配 + 门禁清单 |
 | V-M8 | 三轨改写 TRACK | 母版→目标轨 | `track-config.md`、`track-config.md` + CORE 轨道节 | 目标轨材料 | 匿名按目标轨重做；口径不串台；一稿多投禁令；数据单一正本 | 手工过改写卡 |
-| V-M9 | 申报与答辩 APPLY | 申报书/PPT/QA | `候选药物 X目标赛道/templates/申报书线/申报书写作工作流.md` | 申报书 / PPT / QA | 格式对标；六栏结构；自查表 | 纯 md 版 + 人检 |
+| V-M9 | 申报与答辩 APPLY | 申报书/PPT/QA | `templates/申报书线/申报书写作工作流.md` | 申报书 / PPT / QA | 格式对标；六栏结构；自查表 | 纯 md 版 + 人检 |
 | V-M10 | 校准钩子 CAL | 只读挂接 L2 锚协议 | `references/outcome-anchor-protocol.md`（**存在性**） | 无（声明与边界） | 只声明「存在校准协议文件、生成侧只读挂接」；个人校准 ≠ 模块门禁 | 不挂接亦可走全链 |
 | V-M11 | 编排器 ORCH | runbook+交接卡 | 本文件 §4/§7 | 交接卡 | 每交付一次交接记录 | 口述交接 + 记录 |
 | V-R | 底座 BASE | 环境/冒烟/故障/路径卡 | `references/路径与资产清单.md`；`tools/{env_check,smoke_chain}.py` | 环境档位 / 冒烟结果 / 故障卡 | env_check；脚本冒烟 rc=0 | 手工核 §6 |
@@ -88,7 +88,7 @@ M10 校准 ⇄ 各模块（L2 只读挂接，不进 L0 必载）
 | 冷水证据 | `references/cold-water-evidence.md` | — | V-M1/M6 | L0 既有 | ✅ |
 | 校准协议（只读挂接） | `references/outcome-anchor-protocol.md` | v1.7 | V-M10 | L0(协议) / L2(数据) | ✅ |
 | 行为测试最小集 | `references/behavioral-tests-minimal.md` | — | V-R | L0 既有 | ✅ |
-| 申报书线 | `候选药物 X目标赛道/templates/申报书线/`（申报书写作工作流 + 模板 + 生成脚本 + 一键生成工作流） | — | V-M9 | L0 既有 | ✅ |
+| 申报书线 | `templates/申报书线/`（申报书写作工作流 + 模板 + 生成脚本 + 一键生成工作流） | — | V-M9 | L0 既有 | ✅ |
 | 轨侧脚本（本仓 `scripts/`） | `scripts/`（交付门禁集：卫生断言 / 剂量换算 / 记录转写 / 元数据清理 / 跨文档一致性 / 自然度 / 重复预检 / 引用编号 / 包结构校验 / 元自检） | L0 既有 | ✅ |
 | 轨侧脚本（并轨件） | `scripts/`（15 件 .py：verify_bundle / consistency_check / naturalness_check / precheck_similarity / ref_numberizer / selftest_scripts / assert_delivery_hygiene / check_dose / clean_pdf_meta / crop_zoom / dump_docx_full / transcribe_record / tile_image / batch_ocr / delivery_gate_check） | — | V-M8/R | L0 既有 | ✅ |
 | 轨侧配置 | `track-config.md`、`track-config.md` | — | V-M8 | L1 轨侧 | ✅ |

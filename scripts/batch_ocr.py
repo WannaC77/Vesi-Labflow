@@ -8,14 +8,17 @@
     #    OCR_API_KEY   = 你的密钥
     # 2) 运行
     python batch_ocr.py <outdir> <img1> [img2] ...
+    python batch_ocr.py --help
 
-退出码: 0 = 全部完成 · 1 = 有图失败 · 2 = 未配置端点（不伪造结果）
+退出码: 0 = 全部完成 · 1 = 有图失败 · 2 = 用法/输入错误（缺参、图片不存在）·
+        3 = 未配置端点（未执行，不伪造结果）
 
 设计要点:
     · 逐图输出 <outdir>/<name>.txt；**已存在则跳过**（防覆盖、可断点续跑）
     · 单图失败写 [FAIL] 说明并继续下一张（批量不中断）
     · 不读取任何本机私有配置文件；端点/密钥只从环境变量取
 """
+import argparse
 import base64
 import json
 import os
@@ -56,19 +59,25 @@ def ocr(img):
         return "[FAIL] %s" % e
 
 
-def main(argv):
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog="batch_ocr.py",
+                                 description="按名称批量 OCR 图片（自备端点；逐图输出 <outdir>/<name>.txt，已存在则跳过）")
+    ap.add_argument("outdir", help="输出目录")
+    ap.add_argument("images", nargs="+", help="待识别图片（可多张）")
+    a = ap.parse_args(argv)
     miss = _missing_env()
     if miss:
         print("[SKIP] 未配置 OCR 端点：缺少 " + ", ".join(miss))
-        print("       请先设置环境变量（本仓库不内置端点/密钥/模型名），再重试。")
+        print("       请先设置环境变量（本仓库不内置端点/密钥/模型名），再重试。未执行（rc=3）")
+        return 3
+    missing_img = [p for p in a.images if not os.path.isfile(p)]
+    if missing_img:
+        print("输入错误：图片不存在或不是普通文件 → %s" % ", ".join(missing_img))
         return 2
-    if len(argv) < 3:
-        print(__doc__)
-        return 2
-    outdir = pathlib.Path(argv[1])
+    outdir = pathlib.Path(a.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
     fail = 0
-    for img in argv[2:]:
+    for img in a.images:
         stem = re.sub(r'[^\w\u4e00-\u9fff.-]', '_', pathlib.Path(img).stem)
         out = outdir / ("%s.txt" % stem)
         if out.exists():
@@ -83,4 +92,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    sys.exit(main())

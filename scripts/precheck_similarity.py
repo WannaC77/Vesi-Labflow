@@ -27,10 +27,12 @@ v1 相对 v0 的修复（2026-09-18）：
   python precheck_similarity.py 目标.md --against 对照1.md [对照2.md ...]
   python precheck_similarity.py 目标.md --against 对照1.md --no-fail
     （--no-fail：仅报告不失败，用于探索性自查）
+  python precheck_similarity.py --help
 
 输出: 高风险(整句复制) / 中风险(近似重复) 句子清单 + 主观/客观提示
 退出码: 0=无 HIGH；1=存在 HIGH（整句复制）；2=参数/文件错误
 """
+import argparse
 import difflib
 import re
 import sys
@@ -122,24 +124,25 @@ LOCATE_NOTE = ("判读: 本工具为**抽查级**预检（可机械判定的整�
                "放行必须依据官方查重报告。")
 
 
-def main(argv) -> int:
-    no_fail = "--no-fail" in argv
-    args = [a for a in argv[1:] if not a.startswith("--")]
-    if len(args) < 2 or "--against" not in argv:
-        print(__doc__)
-        return 2
-    target = args[0]
-    ai = argv.index("--against")
-    refs = [a for a in argv[ai + 1:] if not a.startswith("--")]
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(prog="precheck_similarity.py",
+                                 description="句级重复预检（两段式查重的第一段：整句复制 / 近似重复）")
+    ap.add_argument("target", help="待检目标文档")
+    ap.add_argument("--against", nargs="+", required=True, metavar="REF", help="对照文档（≥ 1 份）")
+    ap.add_argument("--no-fail", action="store_true", help="仅报告不失败（探索性自查）")
+    a = ap.parse_args(argv)
+    no_fail = a.no_fail
+    target = a.target
+    refs = list(a.against)
     if not refs:
         print("未提供对照文件（--against 后应为 ≥1 个文件）")
         return 2
-    if not Path(target).exists():
-        print(f"目标文件不存在: {target}")
+    if not Path(target).is_file():
+        print(f"输入错误：目标文件不存在或不是普通文件 → {target}")
         return 2
     for r in refs:
-        if not Path(r).exists():
-            print(f"对照文件不存在: {r}")
+        if not Path(r).is_file():
+            print(f"输入错误：对照文件不存在或不是普通文件 → {r}")
             return 2
 
     text = Path(target).read_text(encoding="utf-8")
@@ -179,4 +182,4 @@ def main(argv) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    sys.exit(main())

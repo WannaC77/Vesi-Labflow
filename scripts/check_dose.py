@@ -299,7 +299,7 @@ def selftest():
 
 def demo():
     """示例：rat 5 mg/kg 的 HED / mg/m² 换算 + 单位等价检查。"""
-    print("### demo：rat 5 mg/kg（候选药物 X脂质体大鼠给药剂量）换算")
+    print("### demo：rat 5 mg/kg（候选药物 X 脂质体大鼠给药剂量）换算")
     print()
     print(report_conversion(convert_all(5.0, "rat")))
     print()

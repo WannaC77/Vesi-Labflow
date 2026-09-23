@@ -1,6 +1,6 @@
 # AGENTS.md — code agent 装载协议（Vesi-Labflow）
 
-> 本文件是**通用入口**：任何 code agent 按本文件即可装载本仓库（已在 OpenCode、Trae 与纯 shell+Python 执行器上实测；Cursor / Codex / Aider / Windsurf 等按 §5 配置）。
+> 本文件是**通用入口**：任何 code agent 按本文件即可装载本仓库（**已实测**：纯 shell+Python 执行器、零提示冷启动 agent 会话两路；OpenCode / Trae 为配置就绪说明，**非已完成实测**；Cursor / Codex / Aider / Windsurf 等按 §5 配置）。
 > **本产品不依赖**任何特定 agent、私有 skill 注册、junction、cron 或 MCP；装载只依赖「读文件 + 跑 Python」。
 
 ## 1. 三步装载（与 BOOT.md 一致）
@@ -33,14 +33,28 @@
 python tools/env_check.py [--selftest] [--json]
 python tools/smoke_chain.py [--selftest] [--root <路径>]
 python tools/<领域工具>.py --selftest        # nca / compartment_fit / release_fit / stats_pipeline
-python scripts/<checker>.py <args>           # exit 0=PASS 1=FAIL 2=usage
+python scripts/<checker>.py <args>           # exit 0=PASS 1=FAIL 2=usage 3=依赖缺失
 ```
 
 - 所有脚本：**无用户绝对路径**；`--help` 可用（rc=0）；依赖见 `requirements.txt`
 - 门禁脚本**必须可失败**（自检里带反例）；`--selftest` 用于验证工具自身
-- 退出码语义：`0` 通过 · `1` 失败 · `2` 用法错误 · `3` 依赖缺失未执行（全链 `SKIP`，**非通过**）
-- 自检产物落盘：`tools/_smoke_out/`（已 `.gitignore`，可安全删除）；只读场景请在副本中执行
+- 退出码语义：`0` 通过 · `1` 失败 · `2` 用法/输入错误 · `3` 依赖或配置缺失未执行（**未执行 ≠ 通过**）
+- 自检产物落盘：`tools/_smoke_out/`（已 `.gitignore`，可安全删除；交付前跑 `clean_delivery` 清理）；只读场景请在副本中执行
 - 解释器：任一 Python 3.11+；多个解释器时脚本自探测依赖最全者（不写死路径）
+
+**`--selftest` 支持表**（不支持者传了会走用法错误 rc=2，勿当成失败）：
+
+| 支持 `--selftest` | 说明 |
+|---|---|
+| `tools/env_check.py` · `tools/smoke_chain.py` · `tools/nca.py` · `tools/compartment_fit.py` · `tools/release_fit.py` · `tools/stats_pipeline.py` | 领域工具自带断言自检 |
+| `scripts/delivery_gate_check.py` | 含「模板缺失 / 坏 YAML」负例 |
+| `scripts/selftest_scripts.py` | **元自检**（无参 = 全跑，`--selftest` 同义）；证明一致性 / 查重 / 包结构校验器真能失败 |
+
+| 不支持（勿传 `--selftest`） |
+|---|
+| `scripts/assert_delivery_hygiene.py` · `consistency_check.py` · `naturalness_check.py` · `precheck_similarity.py` · `ref_numberizer.py` · `crop_zoom.py` · `tile_image.py` · `dump_docx_full.py` · `clean_pdf_meta.py` · `transcribe_record.py` · `batch_ocr.py` · `verify_bundle.py` |
+
+> 覆盖方式：整组脚本的元自检 = `scripts/selftest_scripts.py`；整包结构 = `scripts/verify_bundle.py --root .`。
 
 ## 4. 降级约定（诚实性要求）
 

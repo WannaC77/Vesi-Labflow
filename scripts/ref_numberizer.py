@@ -14,9 +14,12 @@
   python ref_numberizer.py 论文.md                # 预览替换结果到 stdout
   python ref_numberizer.py 论文.md --write        # 直接改写文件
   python ref_numberizer.py 论文.md --report       # 只打印编号映射与校验
+  python ref_numberizer.py --help                 # usage（rc=0）
 
 占位符格式: {ref1} {ref2} ...（数字可任意书写，最终按首次出现顺序重排）
+退出码: 0 = 成功；1 = 存在校验问题（编号断号）；2 = 用法 / 输入错误（缺参、文件不存在）
 """
+import argparse
 import re
 import sys
 from pathlib import Path
@@ -51,14 +54,16 @@ def process(text: str):
     }
 
 
-def main(argv) -> int:
-    if len(argv) < 2:
-        print(__doc__)
-        return 1
-    path = Path(argv[1])
-    if not path.exists():
-        print(f"文件不存在: {path}")
-        return 1
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(prog="ref_numberizer.py", description="占位引用编号器：按首次出现顺序重排 {refN} → [N]")
+    ap.add_argument("path", help="待处理 .md")
+    ap.add_argument("--write", action="store_true", help="直接改写文件（缺省只预览）")
+    ap.add_argument("--report", action="store_true", help="只打印编号映射与校验")
+    a = ap.parse_args(argv)
+    path = Path(a.path)
+    if not path.is_file():
+        print(f"输入错误：文件不存在或不是普通文件 → {path}")
+        return 2
     text = path.read_text(encoding="utf-8")
     new_text, mapping, info = process(text)
 
@@ -71,9 +76,9 @@ def main(argv) -> int:
     if not PLACEHOLDER.search(text):
         print("  （未发现 {refN} 占位符——正文引用请用 {ref1}..{refN} 占位）")
 
-    if "--report" in argv:
+    if a.report:
         return 0
-    if "--write" in argv:
+    if a.write:
         path.write_text(new_text, encoding="utf-8")
         print(f"已改写: {path}")
     else:
@@ -85,4 +90,4 @@ def main(argv) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    sys.exit(main())

@@ -1,8 +1,8 @@
-# s8-gate-v1.1.check.yaml（Phase B 已落 scripts/ · verify 脚本输入）
+# delivery_gate.check.yaml（交付门禁模板 · 由 scripts/delivery_gate_check.py 读取）
 # ⚠️ 2026-09-19 破坏性订正：pieces[].anchor_drift 语义按 §5.4.1 扩展为「可表达沿用态」。
 #    新增 anchor_drift_mode（必填枚举）+ anchor_review_last/round/age_rounds（沿用态必填）。
 #    校验伪码见 <校准台账> §5.4.1；未填 anchor_drift_mode → 该成绩单作废。
-# 用法: 复制本文件 → 按轮次填写各字段 → python scripts/s8_gate_v11_check.py <填写后的yaml>
+# 用法: 复制本文件 → 按轮次填写各字段 → python scripts/delivery_gate_check.py <填写后的yaml>
 gate_version: "S8-GATE-v1.1"
 standard_version: "S8-STD-vN.M"          # 必填
 round_type: "WB独立复现轮"                # 枚举; 非此值 → 该成绩单不计入判定
@@ -28,7 +28,7 @@ pieces:
   - id: 记录
     wb_score: null
     p0_closed: null
-anchor: 95.0              # 初值（经验值，须自行重校）
+    anchor: 95.0              # 初值（经验值，须自行重校）
     anchor_drift_mode: null
     anchor_drift: null
     anchor_review_last: null
@@ -38,7 +38,7 @@ anchor: 95.0              # 初值（经验值，须自行重校）
   - id: 论文
     wb_score: null
     p0_closed: null
-anchor: 89.0              # 初值（经验值，须自行重校）
+    anchor: 89.0              # 初值（经验值，须自行重校）
     anchor_drift_mode: null
     anchor_drift: null
     anchor_review_last: null

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-S8-GATE-v1.1 机器化核对脚本（Vesi 多赛道）
+delivery_gate_check.py — 交付门禁机器化核对（多赛道通用）
 
 判定规则唯一权威正本: <校准台账> 的《放行判定规则》S8-GATE-v1.1 §5.1/§5.2
-输入模板: scripts/s8-gate-v1.1.check.yaml（复制后填写本轮四个分件成绩单 + 跨件一致性 + 硬门）
+输入模板: scripts/delivery_gate.check.yaml（复制后填写本轮四个分件成绩单 + 跨件一致性 + 硬门）
 
 判定式（2026-09-20 同步 §5.2 破坏性订正 + §5.4.1 独立轮锚条款）:
   ok_anchor(p) =
@@ -20,14 +20,18 @@ S8-GATE-v1.1 机器化核对脚本（Vesi 多赛道）
   升版证据: 沿用态可选携带 anchor_review_std_version；缺失 → 输出提示（不阻断，由人工按 §5.4.1 a3 负责）
 
 用法:
-  python s8_gate_v11_check.py <check.yaml>   # 核对（合体放行 exit 0；否则 exit 1）
-  python s8_gate_v11_check.py --selftest     # 内置示例自测（全过 exit 0）
+  python scripts/delivery_gate_check.py <check.yaml>   # 核对（合体放行 exit 0；否则 exit 1）
+  python scripts/delivery_gate_check.py --selftest     # 内置示例自测（全过 exit 0）
+  python scripts/delivery_gate_check.py --help         # usage（exit 0）
 
-退出码: 0 = 合体放行 / 自测全过;  1 = 合体不放行 / 自测失败;  2 = 输入或环境错误
+退出码: 0 = 合体放行 / 自测全过;  1 = 合体不放行 / 自测失败;  2 = 输入或用法错误;
+        3 = 依赖缺失未执行（缺 PyYAML；或 --selftest 出现 SKIP —— 未执行 ≠ 通过）
 落盘: 2026-09-19（S8 扩建 Phase B）
 """
+import argparse
 import os
 import sys
+import tempfile
 
 try:
     import yaml
@@ -238,14 +242,39 @@ def _base_cfg():
     }
 
 
+def _load_template(path):
+    """读取模板：返回 (cfg, err)。err 非空 = 模板不可用（缺件 / 无法解析 / 缺 PyYAML）。
+
+    本函数是「缺件不得冒充通过」的唯一判定点：调用方必须把 err 非空计为 FAIL 或 SKIP，
+    禁止用 SKIP 掩盖「模板本来就在仓里却没被读到」这类缺陷。
+    """
+    if not os.path.exists(path):
+        return None, "模板文件不存在: %s" % path
+    if yaml is None:
+        return None, "缺 PyYAML（pip install pyyaml）"
+    try:
+        with open(path, encoding="utf-8-sig") as f:
+            doc = yaml.safe_load(f)
+    except Exception as e:                                    # noqa: BLE001
+        return None, "模板解析失败: %s" % e
+    if not isinstance(doc, dict):
+        return None, "模板内容不是映射（顶层应为 dict，实际 %s）" % type(doc).__name__
+    return doc, None
+
+
 def selftest():
     passed = []
+    skipped = []
 
     def check(name, cond):
         print(("PASS" if cond else "FAIL") + " | " + name)
         if not cond:
             raise AssertionError(name)
         passed.append(name)
+
+    def skip(name, why):
+        print("SKIP | %s（%s）" % (name, why))
+        skipped.append(name)
 
     # A 全过 → 四件放行 + 合体放行
     res, txt = evaluate(_base_cfg())
@@ -320,25 +349,46 @@ def selftest():
     res, _ = evaluate(cfg)
     check("M1 沿用缺last/round→作废", res["pieces"][0]["verdict"] == "作废")
 
-    # I 模板文件可解析（如 yaml 模块与模板均在）
-    tpl = os.path.join(os.path.dirname(os.path.abspath(__file__)), "s8-gate-v1.1.check.yaml")
-    if yaml is not None and os.path.exists(tpl):
-        with open(tpl, encoding="utf-8-sig") as f:
-            tpl_cfg = yaml.safe_load(f)
-        res, txt2 = evaluate(tpl_cfg)
-        check("I1 模板可解析且输出完整", len(res["pieces"]) == len(tpl_cfg["pieces"])
-              and "合体判定" in txt2)
+    # I 模板文件可解析（缺件 / 坏 YAML 一律计 FAIL；仅「本环境缺 PyYAML」计 SKIP 并整体非通过）
+    tpl = os.path.join(os.path.dirname(os.path.abspath(__file__)), "delivery_gate.check.yaml")
+    if yaml is None:
+        skip("I1 模板解析", "本环境缺 PyYAML，该断言未执行（未执行 ≠ 通过）")
     else:
-        print("SKIP | I1 模板解析（缺 yaml 模块或模板文件）")
+        tpl_cfg, err = _load_template(tpl)
+        check("I1 模板可解析（%s）" % os.path.basename(tpl), err is None)
+        if err is None:
+            res, txt2 = evaluate(tpl_cfg)
+            check("I2 模板输出完整（分件数一致 + 含合体判定）",
+                  len(res["pieces"]) == len(tpl_cfg["pieces"]) and "合体判定" in txt2)
+
+    # I3/I4 负例：模板缺失 / YAML 非法 → 必须判为「不可用」（防缺件被当成通过）
+    if yaml is not None:
+        _c, e_missing = _load_template(os.path.join(os.path.dirname(tpl), "__no_such_template__.yaml"))
+        check("I3 负例：模板缺失 → 判不可用", e_missing is not None)
+        badp = os.path.join(tempfile.gettempdir(), "delivery_gate_selftest_bad.yaml")
+        try:
+            with open(badp, "w", encoding="utf-8") as f:
+                # 缩进掉出：pieces 项内的键被顶到列 0，其后续缩进行即非法（P0-1b 的真实坏法）
+                f.write("pieces:\n  - id: A\n    wb_score: null\nanchor: 1\n    mode: null\n")
+            _c2, e_bad = _load_template(badp)
+            check("I4 负例：坏 YAML（缩进掉出）→ 判不可用", e_bad is not None)
+        finally:
+            try:
+                os.remove(badp)
+            except OSError:
+                pass
 
     print("-" * 56)
+    if skipped:
+        print("SELFTEST PARTIAL — {} 项断言通过，{} 项 SKIP（依赖缺失，未执行 ≠ 通过）".format(len(passed), len(skipped)))
+        return 3
     print("SELFTEST OK — {} 项断言全过".format(len(passed)))
     return 0
 
 
 # ---------------- 入口 ----------------
 
-def main(argv):
+def main(argv=None) -> int:
     reconf = getattr(sys.stdout, "reconfigure", None)
     if reconf is not None:
         try:
@@ -346,26 +396,33 @@ def main(argv):
         except Exception:
             pass
 
-    if "--selftest" in argv:
+    ap = argparse.ArgumentParser(
+        prog="delivery_gate_check.py",
+        description="交付门禁机器化核对（S8-GATE-v1.1）：填写 check.yaml 后核对四件成绩单 + 跨件一致性 + 硬门",
+        epilog="退出码: 0=合体放行/自测全过；1=不放行/自测失败；2=输入或用法错误；3=依赖缺失未执行（未执行 ≠ 通过）")
+    ap.add_argument("check_yaml", nargs="?", help="填写后的 check.yaml（模板：scripts/delivery_gate.check.yaml）")
+    ap.add_argument("--selftest", action="store_true", help="内置自测（含缺件/坏 YAML 负例）")
+    a = ap.parse_args(argv)
+
+    if a.selftest:
         try:
             return selftest()
         except AssertionError:
             print("SELFTEST FAIL")
             return 1
 
-    args = [a for a in argv[1:] if not a.startswith("-")]
-    if not args:
-        print(__doc__)
+    if not a.check_yaml:
+        ap.print_help()
         return 2
-    path = args[0]
+    if not os.path.isfile(a.check_yaml):
+        print("输入错误：文件不存在或不是普通文件 → {}".format(a.check_yaml))
+        return 2
     if yaml is None:
-        print("错误: 需要 PyYAML（pip install pyyaml）")
-        return 2
-    try:
-        with open(path, encoding="utf-8-sig") as f:
-            cfg = yaml.safe_load(f)
-    except Exception as e:
-        print("错误: 无法读取/解析 {}: {}".format(path, e))
+        print("缺依赖: 需要 PyYAML（pip install pyyaml）→ 未执行（rc=3）")
+        return 3
+    cfg, err = _load_template(a.check_yaml)
+    if err is not None:
+        print("错误: {}".format(err))
         return 2
     try:
         res, txt = evaluate(cfg)
@@ -377,4 +434,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    sys.exit(main())

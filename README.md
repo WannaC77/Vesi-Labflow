@@ -70,6 +70,7 @@ Vesi-Labflow/
 │   └── 申报书线/               申报书写作工作流 + 模板 + 生成脚本
 ├── references/                 方法卡与协议（检索式库 / 冷水证据 / 锚校准协议 / 装配 SOP / 故障速查 …）
 ├── tools/                      自检与计算（env_check · smoke_chain · stats_pipeline · nca · 拟合 · fig_samples/）
+│   └── fig_samples/_out/       图件 demo 的**生成物样例**（可删可再生：跑对应 demo 脚本即重建）
 ├── scripts/                    交付门禁脚本（卫生断言 / 剂量换算 / 记录转写 / 一致性检查 …）
 ├── kb/                         自建知识库（空目录 + 自建说明）
 ├── requirements.txt            依赖清单
@@ -80,7 +81,7 @@ Vesi-Labflow/
 ## 运行前提
 
 - **Python 3.11+**（工具的运行基线；不用 3.12 独占语法）。
-- **依赖**：`requirements.txt`（numpy / scipy / pandas / matplotlib / statsmodels / scikit-learn 等）。
+- **依赖**：`requirements.txt`（**分层**：必需 = numpy / scipy / pandas；交付门禁线 = PyYAML / pypdf；可选 = matplotlib / python-docx / Pillow；缺件按模块「降级」列处理）。
 - 建议自建虚拟环境（`<venv>/`）并在其中安装依赖，避免污染系统解释器。
 - **可选件**：OCR / 视觉能力、Word 自动化（Windows 专有）、LaTeX、中文字体。**缺件不阻塞**——模块表有「降级」列，缺件按降级路径执行并标 `[降级]`，工具输出 `SKIP` 并说明原因。
 - **无服务、无数据库、无 API key、无强制联网**（联网仅用于文献检索，且有离线降级路径）。

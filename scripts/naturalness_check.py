@@ -11,9 +11,12 @@
 
 用法:
   python naturalness_check.py 论文.md [更多.md ...]
+  python naturalness_check.py --help                # usage（rc=0）
 
 输出: 每文件五指标得分 + 风险行清单（启发式阈值，非硬标准）
+退出码: 0 = 成功（质检只做提示，不判失败）；2 = 用法 / 输入错误（缺参、文件不存在）
 """
+import argparse
 import re
 import sys
 import statistics
@@ -126,18 +129,18 @@ def check_file(path: Path) -> None:
     print(f"   判定: {'建议人工过一遍风险句' if (flag1 != 'ok' or flag2 != 'ok' or flag3 != 'ok' or flag5 != 'ok') else '无明显 AI 味信号'}")
 
 
-def main(argv) -> int:
-    if len(argv) < 2:
-        print(__doc__)
-        return 1
-    for p in argv[1:]:
-        fp = Path(p)
-        if not fp.exists():
-            print(f"文件不存在: {p}")
-            continue
-        check_file(fp)
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(prog="naturalness_check.py", description="写作自然度质检（五指标：套话/连接词/句首重复/段长方差/模板段）")
+    ap.add_argument("paths", nargs="+", help="待检 .md（可多份）")
+    a = ap.parse_args(argv)
+    missing = [p for p in a.paths if not Path(p).is_file()]
+    if missing:
+        print("输入错误：文件不存在或不是普通文件 → %s" % ", ".join(missing))
+        return 2
+    for p in a.paths:
+        check_file(Path(p))
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    sys.exit(main())

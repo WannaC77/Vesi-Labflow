@@ -4,16 +4,20 @@
 
 用法：
     python assert_delivery_hygiene.py <file.docx> [<file.docx> ...] [--expect <md5>=<路径> ...]
+    python assert_delivery_hygiene.py --help
     输出：逐件 Heading/TOC/updateFields/表数/字面标记/页脚域 状态 + md5。
-    exit 0 = 全部卫生项通过（结构断言）+ md5 与 --expect 相符（若给出）；1 = 有 FAIL。
+    exit 0 = 全部卫生项通过（结构断言）+ md5 与 --expect 相符（若给出）；1 = 有 FAIL；
+         2 = 用法 / 输入错误（缺参、文件不存在）
 
-背景：R3.5 实测 Word 再保存会（a）把 Heading styleId 规范化（1/2/3）；（b）丢失
+背景：实测 Word 再保存会（a）把 Heading styleId 规范化（1/2/3）；（b）丢失
 settings.xml 的 updateFields；（c）（本项目实测）页脚 PAGE 域重复仍会被渲染成
 「第 11 页」。本脚本把这些做成可复跑的断言，防止「交付件被静默改坏」。
 """
 from __future__ import annotations
 
+import argparse
 import hashlib
+import os
 import re
 import sys
 import zipfile
@@ -79,21 +83,24 @@ def audit(path: str) -> dict:
     return out
 
 
-def main() -> int:
-    args = sys.argv[1:]
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(prog="assert_delivery_hygiene.py",
+                                 description="交付件卫生断言（Heading / TOC / updateFields / 表数 / 字面标记 / 页脚域）")
+    ap.add_argument("paths", nargs="+", help="待检 .docx（可多件）")
+    ap.add_argument("--expect", nargs="*", default=[], metavar="MD5=PATH",
+                    help="期望 md5 对（形如 <md5>=<路径>，可给多组）")
+    a = ap.parse_args(argv)
     expects = {}
-    if "--expect" in args:
-        i = args.index("--expect")
-        for spec in args[i + 1:]:
-            if "=" in spec:
-                m, p = spec.split("=", 1)
-                expects[p] = m
-        args = args[:i]
-    if not args:
-        print(__doc__)
+    for spec in a.expect:
+        if "=" in spec:
+            m, p = spec.split("=", 1)
+            expects[p] = m
+    missing = [p for p in a.paths if not os.path.isfile(p)]
+    if missing:
+        print("输入错误：文件不存在或不是普通文件 → %s" % ", ".join(missing))
         return 2
     bad = False
-    for p in args:
+    for p in a.paths:
         r = audit(p)
         print("===== %s =====" % p)
         print("  md5 =", r["md5"])

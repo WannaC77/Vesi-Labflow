@@ -10,10 +10,10 @@
 - 输出：申报书 / PPT / QA 题库 + 映射表
 
 ## 接口字段 / Interface
-申报书线：`候选药物 X目标赛道/templates/申报书线/申报书写作工作流.md`；QA 模板：`templates/答辩QA题库模板.md`；中期/结题映射：`templates/申报-中期-结题映射表.md`。
+申报书线：`templates/申报书线/申报书写作工作流.md`；QA 模板：`templates/答辩QA题库模板.md`；中期/结题映射：`templates/申报-中期-结题映射表.md`。
 
 ## 装载 / Loading（指针，细节在正本）
-`候选药物 X目标赛道/templates/申报书线/`（正本）；`templates/答辩QA题库模板.md`；`templates/申报-中期-结题映射表.md`
+`templates/申报书线/`（正本）；`templates/答辩QA题库模板.md`；`templates/申报-中期-结题映射表.md`
 
 ## 门禁 / Gates
 格式对标（官方结构）；六栏结构齐；自查清单；承诺点↔材料映射无悬空
