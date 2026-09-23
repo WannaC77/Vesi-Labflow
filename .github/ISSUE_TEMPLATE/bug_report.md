@@ -8,7 +8,7 @@ labels: bug
 ## 影响范围
 
 - 包名 / 版本（`README.md` 或 `CHANGELOG.md` 里的版本号）：
-- 受影响文件或工具（如 `tools/env_check.py`）：
+- 受影响文件或工具（如 `tools/nca.py`）：
 - 解释器版本（`python -V`）与操作系统：
 
 ## 复现步骤
@@ -33,6 +33,7 @@ labels: bug
 - [ ] `python tools/env_check.py --selftest`
 - [ ] `python tools/smoke_chain.py --selftest`
 - [ ] 对应工具的 `--selftest`（如 `python tools/nca.py --selftest`）
+- [ ] `python scripts/selftest_scripts.py`（交付脚本自检）
 - [ ] 其它（请写明）：
 
 ```text
