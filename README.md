@@ -75,6 +75,8 @@ Vesi-Labflow/
 ├── kb/                         自建知识库（空目录 + 自建说明）
 ├── requirements.txt            依赖清单
 ├── LICENSE / LICENSE-DOCS / THIRD-PARTY.md
+├── CONTRIBUTING.md / CODE_OF_CONDUCT.md / SECURITY.md   贡献 / 行为准则 / 安全策略
+├── .github/ISSUE_TEMPLATE/     缺陷与功能请求模板
 └── .github/workflows/ci.yml    自检 + 冒烟
 ```
 
@@ -91,7 +93,7 @@ Vesi-Labflow/
 ```bash
 python tools/env_check.py --selftest            # 环境档位（T0 / T1 / T2）
 python tools/smoke_chain.py --selftest          # 全链冒烟：数据 → 统计 → 图件 → 论文骨架（含黄金数值断言）
-python tools/nca.py --selftest                  # 非房室分析（含个体维）
+python tools/nca.py --selftest                  # 非房室分析（含个体维；末段 λz≤0 反例必被拦截）
 python tools/compartment_fit.py --selftest      # 房室模型拟合
 python tools/release_fit.py --selftest          # 释放模型拟合
 python tools/stats_pipeline.py --selftest       # 统计管线（含配对用例）

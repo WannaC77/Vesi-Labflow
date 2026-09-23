@@ -39,6 +39,9 @@ python scripts/<checker>.py <args>           # exit 0=PASS 1=FAIL 2=usage 3=依�
 - 所有脚本：**无用户绝对路径**；`--help` 可用（rc=0）；依赖见 `requirements.txt`
 - 门禁脚本**必须可失败**（自检里带反例）；`--selftest` 用于验证工具自身
 - 退出码语义：`0` 通过 · `1` 失败 · `2` 用法/输入错误 · `3` 依赖或配置缺失未执行（**未执行 ≠ 通过**）
+- 科学护栏（可失败）：`tools/nca.py` 末段 λz ≤ 0（末段不下降）→ **报错退出（exit 1）**，
+  不产出负 AUC0-inf / 负 t1/2 / 负 CL（λz 是这些参数的分母）；AUC/AUMC 外推占比 > 20% 时报告带「⚠ 警示」。
+  `--selftest` 内含上升相反例（必须被拦截）与正例（不得误伤）
 - 自检产物落盘：`tools/_smoke_out/`（已 `.gitignore`，可安全删除；交付前跑 `clean_delivery` 清理）；只读场景请在副本中执行
 - 解释器：任一 Python 3.11+；多个解释器时脚本自探测依赖最全者（不写死路径）
 

@@ -63,7 +63,7 @@ python tools/fig_samples/fig6_char.py
 1. **只改 `synth()`**：每个脚本的数据生成集中在 `synth(rng)`（`fig1` 为 `synth` 内两段基线函数），
    把它替换成「读真实数据 → 返回同结构 dict/ndarray」即可，绘图段与落盘段不用动。
 2. **数据口径先对齐 `references/数据条目字典.md`**：
-   - 组别用 `group_id` / `group_label`（脂质体组 / 游离药组），分析物用 `analyte`（IRI / SN-38 / SN-38G / total）；
+   - 组别用 `group_id` / `group_label`（脂质体组 / 游离药组），分析物用 `analyte`（<原型药> / <活性代谢物> / <结合代谢物> / total）；
    - 单位显式：血浆 `µg/mL`、组织 `µg/g`、剂量 `mg/kg`、时间 `h`、排泄 `%dose`、释放 `%`；
    - 累积口径（%ID / %dose）**图注与正文必须一致**，不得一处一套。
 3. **n 与误差棒**：保留 `n=` 标注；误差棒统一 SD（用 SEM 必须在图注声明理由）；

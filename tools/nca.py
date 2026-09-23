@@ -24,6 +24,14 @@
     单位：脚本不做任何单位换算。时间须为 h（λz/t1/2 才是 h^-1 与 h）；浓度单位随输入，
     CL/Vz/Vss 的量纲 = (Dose 单位) / (浓度单位·h) 与 (Dose 单位)/(浓度单位)。
 
+末段失效护栏（科学正确性修复 A-1 · 必读）
+    λz 是 t1/2、AUC0-inf、CL、Vz、Vss、MRT 的共同分母。若末段 ln(C)-t 回归斜率非负
+    （末段不下降：吸收/分布相未结束、采血时长不足、浓度回升、时间与浓度列写反），
+    则 λz ≤ 0，按公式会算出**负的** t1/2 / AUC0-inf / CL —— 表面「有结果」，实为荒谬值。
+    本版**禁止静默产出**：λz ≤ 0（或非有限）→ 直接报错退出（exit 1）并给出排查指引；
+    不提供「照算」开关（要保留原口径请改用 DAS，或先修数据后复算）。
+    另：AUC/AUMC 外推占比 > 20% 时，报告与 JSON 会带警示（末段覆盖不足，外推项可信度下降）。
+
 输入
     CSV / TSV / Excel（.xlsx/.xls/.xlsm），列名参数化：
         --time 时间列（h）；--conc 浓度列；--group 可选分组列；--subject 个体列
@@ -197,7 +205,11 @@ def auc_lul(t, y):
 
 
 def lambda_z(t, c, n_lambda):
-    """末段 λz：末 n 个 C>0 点做 ln(C) 对 t 的线性回归，返回 (λz, R², Clast拟合, t_last, 点数)。"""
+    """末段 λz：末 n 个 C>0 点做 ln(C) 对 t 的线性回归，返回 (λz, R², Clast拟合, t_last, 点数)。
+
+    λz ≤ 0（末段不下降）或非有限 → ValueError（A-1 护栏：λz 是多个参数的分母，
+    放行会静默产出负 t1/2 / 负 AUC0-inf / 负 CL）。
+    """
     if n_lambda < MIN_N_LAMBDA:
         raise ValueError("n_lambda 必须 ≥ %d（当前 %d）" % (MIN_N_LAMBDA, n_lambda))
     pos = np.where(c > 0.0)[0]                       # 只对 C>0 点取对数
@@ -207,6 +219,16 @@ def lambda_z(t, c, n_lambda):
     tt, cc = t[sel], c[sel]
     slope, intercept = np.polyfit(tt, np.log(cc), 1)  # slope = -λz
     lam = float(-slope)
+    if not np.isfinite(lam) or lam <= 0.0:           # ← A-1 护栏（禁静默出负 AUC / 负 t1/2）
+        raise ValueError(
+            "末段 λz = %.6g（≤ 0，非消除相）：末 %d 个 C>0 点的 ln(C)-t 回归斜率非负。\n"
+            "       常见原因（按概率排序）：① 采血时长不足、末段仍在吸收/分布相（消除相未覆盖）；\n"
+            "       ② 浓度回升（二次峰、分析误差、复溶）；③ 时间列与浓度列写反（t/c 互换）；\n"
+            "       ④ λz 选点区间不对（应取末端单调下降段）。\n"
+            "       后果：λz 是 t1/2、AUC0-inf、CL、Vz、Vss、MRT 的共同分母，λz ≤ 0 会算出"
+            "**负的**暴露量与**负的**半衰期（荒谬值）。\n"
+            "       处理：先核对数据与列对应 → 延长采样或重选末端区间 → 复算。"
+            "本脚本拒绝静默产出无效外推（exit 1）。" % (lam, len(sel)))
     yhat = slope * tt + intercept
     ss_res = float(np.sum((np.log(cc) - yhat) ** 2))
     ss_tot = float(np.sum((np.log(cc) - np.mean(np.log(cc))) ** 2))
@@ -237,16 +259,25 @@ def compute_nca(t_in, c_in, method=DEFAULT_METHOD, n_lambda=DEFAULT_N_LAMBDA, do
     n_pts = int(len(t))
     auc_t = auc_linear(t, c) if method == "linear" else auc_lul(t, c)
     aumc_t = auc_linear(t, t * c)                    # AUMC 一律线性梯形（DAS 惯例）
-    lam, r2, clast_fit, t_last, n_used = lambda_z(t, c, n_lambda)
+    lam, r2, clast_fit, t_last, n_used = lambda_z(t, c, n_lambda)   # λz ≤ 0 → ValueError（A-1 护栏）
     clast_obs = float(c[-1])
     tau = LN2 / lam
     auc_inf = auc_t + clast_fit / lam                # 主口径：拟合末点外推
     auc_inf_obs = auc_t + clast_obs / lam            # 备口径：观测末点外推（DAS 惯例）
+    if not np.isfinite(auc_inf) or auc_inf <= 0.0:   # ← A-1 兜底断言（理论上不可达）
+        raise ValueError("AUC0-inf 非正或非有限（%.6g）——λz/外推项异常，拒绝输出" % auc_inf)
     aumc_inf = aumc_t + clast_fit * t_last / lam + clast_fit / lam ** 2
     mrt = aumc_inf / auc_inf
     mrt_t = aumc_t / auc_t                           # 无外推的 MRT0-t（核对用）
     pct_extrap_auc = (auc_inf - auc_t) / auc_inf * 100.0
     pct_extrap_aumc = (aumc_inf - aumc_t) / aumc_inf * 100.0
+
+    warns = []                                       # 外推占比警示（EMA/FDA 20% 惯例）
+    if pct_extrap_auc > 20.0:
+        warns.append("AUC0-inf 外推占比 %.1f%% > 20%%（末段覆盖不足或 λz 不可靠；"
+                     "报告该值须同时声明外推占比）" % pct_extrap_auc)
+    if pct_extrap_aumc > 20.0:
+        warns.append("AUMC0-inf 外推占比 %.1f%% > 20%%（MRT 可信度下降）" % pct_extrap_aumc)
 
     res = {
         "n_points": n_pts,
@@ -261,6 +292,7 @@ def compute_nca(t_in, c_in, method=DEFAULT_METHOD, n_lambda=DEFAULT_N_LAMBDA, do
         "mrt": mrt, "mrt_0_t": mrt_t,
         "pct_extrap_auc": pct_extrap_auc, "pct_extrap_aumc": pct_extrap_aumc,
         "method": method, "n_lambda": n_lambda,
+        "warnings": warns,
     }
     if dose is not None:
         cl = float(dose) / auc_inf                   # CL = Dose / AUC0-inf
@@ -400,7 +432,21 @@ def report_markdown(results, dose=None):
     lines.append("6. 多样本必须用 --subject 指定个体列；同一曲线内重复时间点 → **直接报错退出"
                  "（exit 1）**，不做静默拼接（静默拼接会把 AUC 系统性压低）。")
     lines.append("7. 多样本汇总口径：跨个体 mean ± SD（样本 SD，ddof=1；个体数 <2 时 SD 记为 -）。")
+    lines.append("8. 末段 λz ≤ 0（末段不下降）→ **直接报错退出（exit 1）**，不产出负 AUC0-inf /"
+                 " 负 t1/2 / 负 CL（λz 是这些参数的分母；A-1 护栏）。")
+    lines.append("9. AUC/AUMC 外推占比 > 20% → 本报告「⚠ 警示」段逐条列出（末段覆盖不足时外推项不可信）。")
     lines.append("")
+    warn_lines = []
+    for item in results:
+        for s in item["subjects"]:
+            for w in (s["nca"].get("warnings") or []):
+                who = ("%s / 个体 %s" % (item["group"], s["subject"])) if item["n_subjects"] > 1 else item["group"]
+                warn_lines.append("- %s：%s" % (who, w))
+    if warn_lines:
+        lines.append("## ⚠ 警示（%d 条）" % len(warn_lines))
+        lines.append("")
+        lines.extend(warn_lines)
+        lines.append("")
     for item in results:
         agg, nsub = item["aggregate"], item["n_subjects"]
         lines.append("## 组别：%s%s" % (item["group"], ("（个体数 n = %d）" % nsub) if nsub > 1 else ""))
@@ -495,12 +541,14 @@ def _synth_rows(subjects=SELFTEST_SUBJ, grid=SELFTEST_GRID, group="G1"):
 
 
 def selftest():
-    """known-answer 合成断言：① 单曲线解析真值（原有）② 3 subject 汇总 vs 逐条 NCA ③ 反例可失败。"""
+    """known-answer 合成断言：① 单曲线解析真值 ② 3 subject 汇总 vs 逐条 NCA ③ 重复时间点反例
+    ④ 上升相反例（λz ≤ 0 必须被拦截，A-1）。"""
     print("=" * 72)
     print("nca.py --selftest")
     print("① 单曲线：C0=100, k=0.5 h^-1, 0–12 h, Δt=0.05；解析真值 t1/2=1.3863 h / AUC0-inf=200 / MRT=2.0 h")
     print("② 个体维：3 subject（C0=90/100/110，k=0.45/0.50/0.55）→ 汇总值须与逐条 NCA 一致，且各自回收解析真值")
     print("③ 反例：无 --subject 的多样本（重复时间点）必须被拦截（exit 1）")
+    print("④ 反例：上升相（末段不下降 → λz ≤ 0）必须被拦截（exit 1），不得产出负 AUC / 负 t1/2（A-1）")
     print("=" * 72)
     n_fail = 0
 
@@ -591,6 +639,61 @@ def selftest():
           "识别 = %d（期望 %d）" % (len(duplicate_times(np.repeat(np.asarray(SELFTEST_GRID), 2))), len(SELFTEST_GRID)))
     check("③ 正常单曲线无误报", duplicate_times(np.asarray(SELFTEST_GRID)) == [],
           "重复点 = %s" % duplicate_times(np.asarray(SELFTEST_GRID)))
+
+    # ---------- ④ 反例：上升相（λz ≤ 0）必须被拦截（A-1 科学正确性修复） ----------
+    t_up = np.array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0])
+    c_up = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])          # 单调上升（吸收未完成 / 录反）
+    # ④-a 旧公式（无护栏）在该数据上确实产出负值 —— 复现复验报告 A-1 的实证数字
+    _sel = np.where(c_up > 0.0)[0][-4:]                      # 与 lambda_z 同口径：末 4 个 C>0 点
+    _slope, _intercept = np.polyfit(t_up[_sel], np.log(c_up[_sel]), 1)
+    _lam_old = float(-_slope)
+    _clast_fit_old = float(np.exp(_intercept + _slope * t_up[-1]))
+    _auc_t_old = auc_linear(t_up, c_up)
+    _auc_inf_old = _auc_t_old + _clast_fit_old / _lam_old
+    check("④ 旧公式在该上升相上产出负 AUC（说明护栏必要）", _lam_old < 0 and _auc_inf_old < 0,
+          "旧口径：λz = %.4f（<0）、t1/2 = %.4f h（<0）、AUC0-inf = %.4f（<0）、CL(Dose=5) = %.4f（<0）"
+          % (_lam_old, LN2 / _lam_old, _auc_inf_old, 5.0 / _auc_inf_old))
+
+    # ④-b lambda_z 直接拦截
+    caught_lz, msg_lz = False, ""
+    try:
+        lambda_z(t_up, c_up, 4)
+    except ValueError as exc:
+        caught_lz, msg_lz = True, str(exc)
+    check("④ lambda_z 对 λz ≤ 0 → ValueError（带排查指引）", caught_lz and "λz" in msg_lz,
+          (msg_lz.splitlines()[0] if msg_lz else "未拦截（危险：负 λz 放行）"))
+
+    # ④-c compute_nca 不产出任何负参数
+    caught_nca, msg_nca = False, ""
+    try:
+        compute_nca(t_up, c_up, method="linear", n_lambda=4, dose=5.0)
+    except ValueError as exc:
+        caught_nca, msg_nca = True, str(exc)
+    check("④ compute_nca 拦截上升相（不产出负 t1/2 / 负 AUC0-inf / 负 CL）",
+          caught_nca and "λz" in msg_nca, (msg_nca.splitlines()[0] if msg_nca else "未拦截"))
+
+    # ④-d run_curves / CLI 路径 → SystemExit(1)（同一护栏，逐曲线带标签）
+    up_rows = [{"group": "G1", "t": float(ti), "c": float(ci)} for ti, ci in zip(t_up, c_up)]
+    caught_run, msg_run = False, ""
+    try:
+        run_curves(up_rows, "t", "c", group_col="group", method="linear", n_lambda=4, dose=5.0)
+    except SystemExit as exc:
+        caught_run, msg_run = True, str(exc)
+    check("④ run_curves 路径 → exit 1（带曲线标签 + 指引）",
+          caught_run and "λz" in msg_run and "exit 1" in msg_run,
+          (msg_run.splitlines()[0] if msg_run else "未拦截"))
+
+    # ④-e 正例未被误伤：正常消除相曲线仍产出正值（与 ① 同一组数据）
+    check("④ 正例未误伤：λz > 0 且 t1/2 > 0 且 AUC0-inf > 0",
+          res["lambda_z"] > 0 and res["t_half"] > 0 and res["auc0_inf"] > 0,
+          "λz = %.6f｜t1/2 = %.6f h｜AUC0-inf = %.6f" % (res["lambda_z"], res["t_half"], res["auc0_inf"]))
+
+    # ④-f 外推占比警示（>20% 必带 warning，正常曲线不带）
+    t_short, c_short = _synth_iv(t_end=2.0, dt=0.1, c0=100.0, k=0.05)     # 半衰期远长于观测窗
+    res_short = compute_nca(t_short, c_short, method="linear", n_lambda=4, dose=5.0)
+    check("④ 外推占比 > 20% → 带 warning（正常曲线不带）",
+          bool(res_short.get("warnings")) and not res.get("warnings"),
+          "短窗 = %s｜正常窗 = %s" % (res_short.get("warnings"), res.get("warnings") or "[]"))
 
     print("-" * 72)
     if n_fail == 0:
