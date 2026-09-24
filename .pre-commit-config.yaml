@@ -1,0 +1,37 @@
+# Pre-commit 钩子（轻量，本地可装，不依赖网络服务）
+#
+# 安装：
+#   pip install pre-commit      # 仅本地开发用，不是运行本仓库的依赖
+#   pre-commit install
+# 全量跑一次：pre-commit run --all-files
+#
+# 说明：
+# - 钩子均为 pre-commit 官方/社区插件仓，运行时不调用任何私有服务；
+#   首次 pre-commit run 需构建钩子 venv，属正常一次性开销。
+# - md-lint（markdownlint）是提醒级检查：缺 node 或不想装时删除该钩子即可，
+#   它不阻塞内容正确性。
+# - 本仓库运行基线是 Python 3.11+（见 README「运行前提」）；pre-commit 本身要求 Python 3.9+。
+# - default_stages 显式声明，避免未来 pre-commit 改默认 stages 时行为漂移。
+
+default_stages: [pre-commit]
+minimum_pre_commit_version: "3.2.0"
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]   # 保留 md 里两个空格的硬换行
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: [--maxkb=512]
+      - id: mixed-line-eol
+        args: [--fix=lf]
+
+  # md-lint（提醒级）：缺 node 或不想装时删除本段即可，其余钩子不受影响
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.41.0
+    hooks:
+      - id: markdownlint
+        args: ["--disable", "MD013", "MD033", "--"]

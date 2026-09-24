@@ -1,0 +1,37 @@
+# 统一换行与二进制处理（跨平台协作口径：文本一律 LF；Windows 脚本除外）
+* text=auto eol=lf
+
+*.py   text eol=lf diff=python
+*.md   text eol=lf
+*.txt  text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.cff  text eol=lf
+*.tex  text eol=lf
+*.cls  text eol=lf
+*.sty  text eol=lf
+*.bib  text eol=lf
+
+# Windows 脚本必须 CRLF（bat 的 LF 会被 cmd 解析出错）
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+
+# 二进制：禁止任何换行转换
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.pdf  binary
+*.xlsx binary
+*.docx binary
+*.zip  binary
+*.ttf  binary
+*.otf  binary
+
+# SVG：生成物按「逐字节入库」处理（-text）——
+#   · tools/fig_samples/_out/*.svg 为 matplotlib 输出（Windows 下 CRLF），标 -text 可避免
+#     「重跑一次 demo 就变脏」的反复假 diff；
+#   · docs/images/*.svg 为 LF（本仓库提交形态），-text 同样不做行尾转换，两种形态互不干扰。
+*.svg -text
+

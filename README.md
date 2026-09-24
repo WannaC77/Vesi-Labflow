@@ -3,10 +3,12 @@
 ![python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![docs](https://img.shields.io/badge/docs-CC%20BY%204.0-lightgrey)
+![smoke](https://img.shields.io/badge/smoke-full%20chain%20PASS-brightgreen)
 
-> **英文版 / English version**：`README.en.md`（本文件为中文版正本；英文版由英文侧维护，两份同构）
+> **它不替你思考，也不替你下结论；它保证的是：你做的每一步都留下可核查的证据链。**
+> **英文版 / English version**：`README.en.md`（本文件为中文正本；同步承诺见 `CONTRIBUTING.md`「双语同步 SLA」）
 > **冷启动**：只有 5 分钟？先读 `BOOT.md`，再读 `QUICKSTART.md`。
-> **CI 徽章**：待仓库 URL 确定后补（与 `LICENSE` / `CITATION.cff` 同批替换占位）。
+> **CI**：`.github/workflows/ci.yml` 在每次 push / PR 上跑自检与冒烟（Python 3.11 + 3.13 双版本）；CI 徽章与仓库链接在仓库 URL 确定后同批补上。
 
 ---
 
@@ -14,7 +16,11 @@
 
 **Vesi-Labflow 是一套「手册 + 工具链」形态的科研工作流引擎**：把「**文献 → 实验设计 → 数据记录 → 统计分析 → 论文装配**」拆成 **11 个模块 + 1 个底座**，每个模块都带**可执行门禁**与**显式降级路径**——方法写在 `workflows/` 与 `references/`，计算与自检交给 `tools/` 与 `scripts/`。任何能读文件、能跑 Python 的人或 code agent，按三步装载即可开工。
 
-它不替你思考，也不替你下结论；它保证的是：**你做的每一步都留下可核查的证据链**。
+## 为什么需要它（Why）
+
+- 实验做完才发现**记录对不上、口径不一致、图注与数据不符**——返工成本远高于当场记录：本包把「记录 → 统计 → 图件 → 论文」做成一条**带门禁的流水线**，每步产物可复核；
+- 文献读了记不住、引用查不回：精读笔记 + 证据表 + 三态标注（事实 / 推断 / 假设）把文献变成**可溯源的资产**，而不是一堆 PDF；
+- 缺件是常态（没装 LaTeX、没有 Word 自动化、OCR 不可用）：本包把「降级」写成制度——`[降级]` / `SKIP` 一律如实标注并给出替代路径，**绝不假称通过**。
 
 ## 目标用户
 
@@ -22,6 +28,8 @@
 - **生命科学方向**（细胞 / 分子 / 动物实验）的本科生与研究生；
 - **学科竞赛与创新创业训练计划队伍**——需要把「做了什么、凭什么这么做」讲清楚的团队；
 - **需要可核查流程的 AI 辅助科研者**——想用 AI 提效，但不想让流程变成黑箱的人。
+
+**门槛**：不需要会 LaTeX、不需要统计软件、不需要写代码——会读文件、能跑 `python` 即可（每个自检与计算脚本都带 `--selftest`，命令照抄 `QUICKSTART.md`）；实验判断与论文论述仍由你本人负责。
 
 ## 不服务（明确拒绝）
 
@@ -76,13 +84,15 @@ Vesi-Labflow/
 ├── references/                 方法卡与协议（检索式库 / 冷水证据 / 锚校准协议 / 装配 SOP / 故障速查 …）
 ├── tools/                      自检与计算（env_check · smoke_chain · stats_pipeline · nca · 拟合 · fig_samples/）
 │   └── fig_samples/_out/       图件 demo 的**生成物样例**（可删可再生：跑对应 demo 脚本即重建）
-├── scripts/                    交付门禁脚本（卫生断言 / 剂量换算 / 记录转写 / 一致性检查 …）
+├── scripts/                    交付门禁脚本（卫生断言 / 剂量换算 / 记录转写 / 一致性检查 / verify_manifest …）
 ├── kb/                         自建知识库（空目录 + 自建说明）
+├── docs/images/                真实运行生成的样张（本文件「5 分钟你会拿到什么」引用）
 ├── requirements.txt            依赖清单
 ├── LICENSE / LICENSE-DOCS / THIRD-PARTY.md
-├── CONTRIBUTING.md / CODE_OF_CONDUCT.md / SECURITY.md   贡献 / 行为准则 / 安全策略
-├── .github/ISSUE_TEMPLATE/     缺陷与功能请求模板
-└── .github/workflows/ci.yml    自检 + 冒烟
+├── CONTRIBUTING.md / CODE_OF_CONDUCT.md / SECURITY.md / SUPPORT.md   贡献 / 行为准则 / 安全 / 支持
+├── MAINTAINERS.md / .editorconfig / .gitattributes / .pre-commit-config.yaml   维护者 / 开发约定
+├── .github/                    CI（workflows/ci.yml）· issue 与 PR 模板 · CODEOWNERS · dependabot
+└── CHANGELOG.md / CITATION.cff
 ```
 
 ## 运行前提
@@ -118,6 +128,23 @@ python scripts/selftest_scripts.py              # 交付门禁脚本元自检
 
 > L2 是**可选增强**：只用包内 L0 也能跑完整条链；没有 L2 时相关模块走「降级」列。
 
+## 它从哪里长出来（实战演变）
+
+**Origin timeline**：本包骨架脱胎于本人 2026 年 8 月起的科研工作流（初版 2026-08-13 建目录骨架，2026-08-30 完成主题适配与人格重构），此后经一个目标赛道课题与一次目标赛道真实使用迭代至 9 月中；开源剥离工作自 2026-09-22 启动（本包 v1.0.0）。
+
+本包不是纸上设计——方法与门禁来自上述真实运行的科研流程，以下每条都能在交付台账里查到磁盘证据：
+
+**成功案例**
+- **目标赛道实验设计三轮过审**：v4 → v5.1 → v7，模拟网评体系（双锚校准）把设计分从 9.0 修到 9.25，且真值锚（已知答案锚）Δ0——分数回升有逐项实据，不是尺子放水。
+- **冷水证据库 6 条引文**全部经 NCBI E-utilities 逐条实证后才入卡——"引用须可溯源"不是口号，是被"差点放行无关文献"事件逼出来的机制。
+- **竞争型交付**：申报材料按用户反馈 24h 内完成 v1→v2 迭代，每处勘误都有知识库事实依据。
+
+**失败典型（本包最值钱的部分）**
+- **编造 PMID 事件**：一次主题重构中，工作流曾用 10 条编造文献替换了 6 条实证文献，还静默删除了两个工作流——抽查 4 条全为无关文献。现在包内所有文献元数据强制过 NCBI 实证，三态标注与冷水证据机制就是这次事故的产物。
+- **跨 agent 协作数字不符**：外部 agent 交付清单自报"25/5"，逐条实点却为"4/23/7"——由此固化了"归并只认逐条复点，不采自报汇总"的纪律。
+
+> 更多原始记录见 `learnings.md`（自改进闭环的格式说明——数据本身不随包，机制与格式随包）。
+
 ## 学术诚信与 AI 使用声明
 
 - **绝不编造**数据、结果与文献引用；不确定性如实汇报（体系局限、数据缺口、参数敏感性）。
@@ -125,6 +152,26 @@ python scripts/selftest_scripts.py              # 交付门禁脚本元自检
 - **AI 使用透明**：按你所在机构 / 赛事 / 期刊的规定，声明所用 AI 工具的**名称、版本与使用范围**，并保留过程材料备查；未按要求声明的后果由使用者承担。
 - **原始数据不改**：记录只追加不修改，原始文件只读归档；统计方法**实验前定稿**，为显著性而改分析方案属学术不端前兆。
 - **三态标注**（事实 / 推断 / 假设）与**冷水证据**（交付前主动找否证）是常驻自查项，见 `VESI-CORE.md` 与 `references/cold-water-evidence.md`。
+
+## 5 分钟你会拿到什么
+
+不读参数、不听承诺——直接看真跑出来的样子。以下产物都是**本仓库真实运行生成**（合成数据、固定 seed）：
+
+| 产物 | 它是什么 | 你怎么拿到它 |
+|---|---|---|
+| ![PK 血药浓度-时间半对数曲线（两组，均值±SD）](docs/images/fig1_pk_curve.png) | `tools/fig_samples/fig1_pk_curve.py` 的血药浓度-时间曲线（两组、均值 ± SD + 个体散点） | `QUICKSTART.md` 第 3 步冒烟链同款管线的样例输出——把 `fig_samples/` 里的脚本换成你自己的数据就能得到同形状 |
+| ![体外释放曲线一阶与 Higuchi 拟合](docs/images/fig5_release.png) | 体外释放实测点 + 一阶 & Higuchi 模型拟合线（R² 打印在终端） | `QUICKSTART.md` 第 5 步第 3 条（`workflows/04-体外释放.md` + `tools/release_fit.py`）做到的事，样例脚本见 `fig_samples/fig5_release.py` |
+| ![PK 参数柱状图（Cmax/t½/MRT 等，含误差棒与显著性标注）](docs/images/fig3_pk_bar.png) | `tools/fig_samples/fig3_pk_bar.py` 的 1×3 参数面板 | `QUICKSTART.md` 第 3 步之后、第 5 步第 4 条统计/可视化环节的典型产物形态 |
+
+整个样例集的运行方式见 `tools/fig_samples/README.md`；想逐张换真实数据，改对应脚本的数据区即可。
+
+## 维护与发布
+
+- **维护者 / 支持**：`MAINTAINERS.md`（守门范围）· `SUPPORT.md`（提问前先跑自检；首应 ≤ 7 天）
+- **版本与回滚**：`CHANGELOG.md`（SemVer tag 约定 + 逐版条目）——按 tag 回退到已知可用版本
+- **中英同步**：中文正本 → 英文版 ≤ 7 天（承诺见 `CONTRIBUTING.md`「双语同步 SLA」）
+- **提交 PR 前**：`pip install pre-commit && pre-commit run --all-files`（钩子清单见 `.pre-commit-config.yaml`）
+- **文档-磁盘一致性**：`python scripts/verify_manifest.py --root .`（缺件 → rc=1；用法错误 → rc=2；判据自带 `--selftest`）
 
 ## 许可
 

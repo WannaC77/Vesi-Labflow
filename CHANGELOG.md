@@ -15,6 +15,11 @@
 - 装载件：`BOOT.md` / `AGENTS.md` / `README.md` / `README.en.md` / `QUICKSTART.md`
 - 合规件：`LICENSE`（MIT）/ `LICENSE-DOCS`（CC BY 4.0）/ `THIRD-PARTY.md`
 - 社区件：`CONTRIBUTING.md` / `CODE_OF_CONDUCT.md` / `SECURITY.md` / `.github/ISSUE_TEMPLATE/`
+- 支持与治理：`SUPPORT.md`（支持路径与首应承诺）/ `MAINTAINERS.md` / `.github/CODEOWNERS` / `.github/PULL_REQUEST_TEMPLATE.md` / `.github/ISSUE_TEMPLATE/config.yml` / `.github/dependabot.yml`
+- 开发约定：`.editorconfig` / `.gitattributes` / `.pre-commit-config.yaml`（可选装的提交前钩子；清单与免责说明在文件内）
+- 样张：`docs/images/`（fig_samples 三图 + `smoke_chain --selftest` 输出说明；均由真实运行生成，合成数据固定 seed）
+- 中英同步承诺：`CONTRIBUTING.md`「双语同步 SLA」（中文为正本，英文版 ≤ 7 天内同步）
+- 门禁脚本追加：`scripts/verify_manifest.py`（文档引用 ↔ 磁盘一致性自证；缺件 → rc=1，用法错误 → rc=2）
 
 **设计要点**
 - 诚实性优先：模块表含**降级列**，缺件一律 `[降级]`/`SKIP` 并留证

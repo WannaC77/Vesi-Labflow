@@ -42,3 +42,6 @@ jobs:
 
       - name: 包结构自校验
         run: python scripts/verify_bundle.py --root .
+
+      - name: 文档-磁盘一致性自证（verify_manifest）
+        run: python scripts/verify_manifest.py --root .

@@ -1,0 +1,18 @@
+# Dependabot：pip 依赖 + GitHub Actions 双更新源，每周计划性检查
+# 说明：本仓库 CI 用 GitHub Actions（.github/workflows/ci.yml）；Python 依赖在仓库根
+# requirements.txt（Vesi 侧）。
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]

@@ -1,7 +1,9 @@
 # Vesi-Labflow
 
 > **A research workflow engine for pharmaceutical and life sciences** — turning *literature → experimental design → data records → statistics → manuscript* into **11 modules + 1 base layer**, each with an **executable gate** and an **explicit degradation path**.
-> Chinese version: [`README.md`](README.md)
+> **It does not think for you, and it does not conclude for you — it makes sure every step you take leaves an auditable evidence trail.** Missing pieces are marked `[降级]`/`SKIP` and always reported, never silently passed.
+> Chinese version: [`README.md`](README.md) (Chinese is the source of truth; the English mirror follows within 7 days — see `CONTRIBUTING.md`).
+> **CI**: `.github/workflows/ci.yml` runs the self-checks and smoke chains on every push/PR (Python 3.11 + 3.13); the CI badge and repository links land once the repository URL is fixed.
 
 `Vesi-Labflow` is not a "one-click paper generator". It is a **process you can audit**: every module has gates, every claim maps back to evidence, and every missing component degrades honestly with a `[降级]` (degraded) marker instead of pretending to work.
 
@@ -43,6 +45,18 @@ python tools/stats_pipeline.py --selftest # statistics pipeline (paired long-tab
 
 See [`QUICKSTART.md`](QUICKSTART.md) for the 5-minute path and [`AGENTS.md`](AGENTS.md) if you are a code agent.
 
+## What you get in 5 minutes
+
+Everything below comes from **actually running this repo** (synthetic data, fixed seeds) — no mock-ups:
+
+| Artifact | What it is | How to get it |
+|---|---|---|
+| ![PK concentration-time curve](docs/images/fig1_pk_curve.png) | plasma concentration–time curve from `tools/fig_samples/fig1_pk_curve.py` (two groups, mean ± SD + individual points) | sample output of the very pipeline behind step 3 in `QUICKSTART.md` — swap the data block for yours to get the same shape |
+| ![release curve with fits](docs/images/fig5_release.png) | in-vitro release points + first-order & Higuchi fits (R² printed in the terminal) | what step 5.3 of `QUICKSTART.md` does (`workflows/04-体外释放.md` + `tools/release_fit.py`) |
+| ![PK parameter bars](docs/images/fig3_pk_bar.png) | 1×3 PK-parameter panel from `tools/fig_samples/fig3_pk_bar.py` | the typical artifact of the statistics/visualisation stage (step 5.4) |
+
+How to run the whole sample set: `tools/fig_samples/README.md`.
+
 ## Capability map
 
 | # | Module | What it does | Gate highlights |
@@ -76,9 +90,11 @@ Vesi-Labflow/
 ├── templates/              # design cards, record templates, caption template, calibration ledger, anchor card
 ├── references/             # anchor protocol, statistics notes, figure pipeline, paper SOP, troubleshooting
 ├── tools/                  # env_check · smoke_chain · nca · compartment_fit · release_fit · stats_pipeline
-├── scripts/                # delivery gates (hygiene, consistency, similarity, bundle check, …)
+├── scripts/                # delivery gates (hygiene, consistency, similarity, bundle & manifest checks, …)
 ├── kb/                     # your own knowledge base (empty; see kb/README.md)
-└── .github/workflows/ci.yml
+├── docs/images/            # samples produced by real runs (see "What you get in 5 minutes")
+├── SUPPORT.md · MAINTAINERS.md · .pre-commit-config.yaml / .editorconfig / .gitattributes
+└── .github/                 # CI (workflows/ci.yml) · issue & PR templates · CODEOWNERS · dependabot
 ```
 
 ## Requirements & degradation
@@ -99,3 +115,10 @@ Vesi-Labflow/
 - AI is an **assistant**: data and conclusions must be yours; see the academic-integrity clauses in `VESI-CORE.md` and the relevant workflows.
 - Code: **MIT** (`LICENSE`). Documentation: **CC BY 4.0** (`LICENSE-DOCS`). Third-party assets: see `THIRD-PARTY.md`.
 - No official materials, third-party papers, or real experimental data are included.
+
+## Maintenance
+
+- Maintainers / support: `MAINTAINERS.md` · `SUPPORT.md` (run the self-checks first; first response ≤ 7 days).
+- Versioning & rollback: `CHANGELOG.md` (SemVer tag convention; tag entries double as release notes).
+- Before opening a PR: `pip install pre-commit && pre-commit run --all-files`.
+- Docs-vs-disk consistency: `python scripts/verify_manifest.py --root .` (a missing referenced file → `rc=1`; usage error → `rc=2`).
