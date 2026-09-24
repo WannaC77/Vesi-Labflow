@@ -1,7 +1,12 @@
 # Vesi-Labflow · 药学与生命科学科研工作流（中文版）
 
+![python](https://img.shields.io/badge/python-3.11%2B-blue)
+![license](https://img.shields.io/badge/license-MIT-green)
+![docs](https://img.shields.io/badge/docs-CC%20BY%204.0-lightgrey)
+
 > **英文版 / English version**：`README.en.md`（本文件为中文版正本；英文版由英文侧维护，两份同构）
 > **冷启动**：只有 5 分钟？先读 `BOOT.md`，再读 `QUICKSTART.md`。
+> **CI 徽章**：待仓库 URL 确定后补（与 `LICENSE` / `CITATION.cff` 同批替换占位）。
 
 ---
 

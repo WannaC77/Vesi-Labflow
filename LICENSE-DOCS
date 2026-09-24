@@ -14,5 +14,5 @@ Under the following terms:
 许可全文（legal code）：https://creativecommons.org/licenses/by/4.0/legalcode
 
 > 说明：**代码部分**（`*.py`、CI 配置、脚本）适用根目录 `LICENSE`（MIT）。
-> 第三方件（LaTeX 类文件、引用的方法论文档等）适用其各自许可，见 `THIRD-PARTY.md`。
+> 第三方件（第三方类文件 / 字体 / 模板 / 引用的方法论文档等）适用其各自许可，见 `THIRD-PARTY.md`。
 > 引用的公开竞赛题目名称、赛事规则等归各自权利人所有。
