@@ -3,7 +3,8 @@
 > **A research workflow engine for pharmaceutical and life sciences** — turning *literature → experimental design → data records → statistics → manuscript* into **11 modules + 1 base layer**, each with an **executable gate** and an **explicit degradation path**.
 > **It does not think for you, and it does not conclude for you — it makes sure every step you take leaves an auditable evidence trail.** Missing pieces are marked `[降级]`/`SKIP` and always reported, never silently passed.
 > Chinese version: [`README.md`](README.md) (Chinese is the source of truth; the English mirror follows within 7 days — see `CONTRIBUTING.md`).
-> **CI**: `.github/workflows/ci.yml` runs the self-checks and smoke chains on every push/PR (Python 3.11 + 3.13); the CI badge and repository links land once the repository URL is fixed.
+> **CI**: `.github/workflows/ci.yml` runs the self-checks and smoke chains on every push/PR (Python 3.11 + 3.13) — [![CI](https://github.com/WannaC77/Vesi-Labflow/actions/workflows/ci.yml/badge.svg)](https://github.com/WannaC77/Vesi-Labflow/actions/workflows/ci.yml).
+> **Repository / Releases**: <https://github.com/WannaC77/Vesi-Labflow> · <https://github.com/WannaC77/Vesi-Labflow/releases>
 
 `Vesi-Labflow` is not a "one-click paper generator". It is a **process you can audit**: every module has gates, every claim maps back to evidence, and every missing component degrades honestly with a `[降级]` (degraded) marker instead of pretending to work.
 
