@@ -4,13 +4,13 @@ title: "Vesi-Labflow — 药学与生命科学科研工作流引擎"
 abstract: "A reproducible, gate-driven research workflow engine for pharmaceutical and life sciences: literature → experimental design → data records → statistics → claim-evidence mapped manuscripts. Includes executable gates, honest degradation paths, and validated domain tools (NCA, compartmental fitting, release modelling, statistics pipeline)."
 type: software
 authors:
-  - name: "<GitHub 用户名>"
+  - name: "WannaC77"
     # 说明：署名使用 GitHub 用户名（不含真实姓名与机构）
 version: "1.0.0"
 date-released: "2026-09-22"
 license: MIT
 license-url: "https://opensource.org/license/mit"
-repository-code: "<本仓库 URL>"
+repository-code: "https://github.com/WannaC77/Vesi-Labflow"
 keywords:
   - research-workflow
   - pharmacology

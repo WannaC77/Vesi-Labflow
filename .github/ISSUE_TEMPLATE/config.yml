@@ -1,8 +1,8 @@
 blank_issues_enabled: true
 contact_links:
   - name: 使用问题 / Usage questions
-    url: <本仓库 URL>/discussions
+    url: https://github.com/WannaC77/Vesi-Labflow/discussions
     about: 先搜 Discussions（含「怎么装载 / 怎么跑自检」常见问答）；无结果再开 issue。
   - name: 安全披露 / Security disclosure
-    url: <本仓库 URL>/security/advisories/new
+    url: https://github.com/WannaC77/Vesi-Labflow/security/advisories/new
     about: 安全问题请走私密披露通道，不要开公开 issue（见 SECURITY.md）。

@@ -1,9 +1,9 @@
 # 代码所有者（默认全部由主维护者评审）
-# 发布前占位：`@<GitHub 用户名>` 与 LICENSE / CITATION.cff 同批替换为真实账号。
-*       @<GitHub 用户名>
+# 发布前占位：`@WannaC77` 与 LICENSE / CITATION.cff 同批替换为真实账号。
+*       @WannaC77
 
 # 门禁与规则类改动请务必走 PR（改了判据就要附「能失败的负例」证据）
-/tools/             @<GitHub 用户名>
-/scripts/           @<GitHub 用户名>
-/templates-library/ @<GitHub 用户名>
-/workflows/         @<GitHub 用户名>
+/tools/             @WannaC77
+/scripts/           @WannaC77
+/templates-library/ @WannaC77
+/workflows/         @WannaC77

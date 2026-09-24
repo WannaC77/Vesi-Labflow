@@ -5,7 +5,7 @@
 ## 0. 拿包
 
 ```bash
-git clone <本仓库 URL> Vesi-Labflow
+git clone https://github.com/WannaC77/Vesi-Labflow Vesi-Labflow
 cd Vesi-Labflow
 ```
 
