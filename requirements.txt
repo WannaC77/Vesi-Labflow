@@ -2,7 +2,7 @@
 #
 # ── 必需：T0 核心线（数值 / 统计）
 #    缺任一项 → tools/env_check.py 判「未达 T0」并 exit 1（核心计算链不可用）
-numpy>=1.24,<3
+numpy>=2.5.3,<3
 scipy>=1.10,<2
 pandas>=2.0,<3
 #
