@@ -14,7 +14,7 @@
     缺件均为「降级可走」：按各模块表「降级」列执行并标 `[降级]`（缺件≠工具坏）。
 
 路径 / Paths（根解析＝探测链 · 顺序固定 · **源码内不写死任何机器绝对路径**）
-    1. 环境变量（最高优先）：`LABFLOW_ROOT`（未设则兼容 `OPENLAB_ROOT`）→ 指向包根
+    1. 环境变量（最高优先）：`LABFLOW_ROOT` → 指向包根
     2. 自脚本位置向上逐级：某祖先目录**同时**含 `tools/` 与 `workflows/` → 该目录＝包根
        （开源包布局：包根即仓根，`workflows/`·`tools/`·`references/`·`templates/`·`modules/` 直接在包根下）
     3. 旧布局兼容：某祖先目录名为旧根目录名且其下 `workflows/` 在位
@@ -47,7 +47,7 @@ from pathlib import Path
 
 VERSION = 'v1.1 (2026-09-22)'    # v1.1：根解析改「探测链」（环境变量 → tools+workflows 同位 → 旧布局 → 诚实降级）
 
-ROOT_ENV_VARS = ('LABFLOW_ROOT', 'OPENLAB_ROOT')     # 中性前缀；可指向包根
+ROOT_ENV_VARS = ('LABFLOW_ROOT',)                        # 中性前缀；可指向包根（12 批 W-08：兼容位收窄）
 TEX_ENV, FONT_ENV, VENV_ENV = 'LABFLOW_TEX', 'LABFLOW_FONTS', 'LABFLOW_VENV'
 LEGACY_ROOT_NAME = 'vesi'                            # 旧布局的根目录名（包内已无此前缀）
 FONT_CANDIDATES = ('Microsoft YaHei', 'SimHei', 'Noto Sans CJK SC', 'Source Han Sans SC',

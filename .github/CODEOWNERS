@@ -5,5 +5,4 @@
 # 门禁与规则类改动请务必走 PR（改了判据就要附「能失败的负例」证据）
 /tools/             @WannaC77
 /scripts/           @WannaC77
-/templates-library/ @WannaC77
 /workflows/         @WannaC77

@@ -3,8 +3,8 @@
 #    新增 anchor_drift_mode（必填枚举）+ anchor_review_last/round/age_rounds（沿用态必填）。
 #    校验伪码见 <校准台账> §5.4.1；未填 anchor_drift_mode → 该成绩单作废。
 # 用法: 复制本文件 → 按轮次填写各字段 → python scripts/delivery_gate_check.py <填写后的yaml>
-gate_version: "S8-GATE-v1.1"
-standard_version: "S8-STD-vN.M"          # 必填
+gate_version: "DELIVERY-GATE-v1"
+standard_version: "DELIVERY-STD-vN.M"    # 必填
 round_type: "WB独立复现轮"                # 枚举; 非此值 → 该成绩单不计入判定
 pieces:
   - id: 综述

@@ -17,7 +17,7 @@
 | Audience | Why |
 |---|---|
 | Pharmacy students/researchers (formulation, PK, bioanalysis) | Domain tools with known-answer self-tests |
-| Life-science students/researchers (cell / molecular / animal) | Design, record and statistics discipline in one place |
+| Life-science students/researchers | Entry-level coverage: record / statistics / delivery discipline (specialized cell & molecular tools out of scope) |
 | Contest teams (innovation / challenge programs) | Auditable process instead of ad-hoc generation |
 | Anyone using AI as a *research assistant* | Gates, evidence chains and honest degradation |
 
@@ -110,6 +110,10 @@ Vesi-Labflow/
 | **L0** | ENGINE, modules, workflows, templates, references, tools, scripts | ✅ fully open |
 | **L1** | track/domain profiles | generic examples only |
 | **L2** | your private calibration ledger, anchor cards, shared collaboration layer | ❌ not shipped — build your own (`kb/`, `<校准台账>`, `<锚注册卡>/`) |
+
+## Related project (sibling)
+
+**[Euler-Modelforge](https://github.com/WannaC77/Euler-Modelforge)** is the sibling project: the same "single-core multi-track + loading discipline + falsifiable gates" architecture realized for the **math-modeling contest** domain. Same architecture, different domain — each stands alone.
 
 ## Integrity & licensing
 

@@ -35,15 +35,7 @@ kb/*
 *.local.toml
 config.local.toml
 
-# ── 模板库生成图（目录保留，产物不入库）
-templates-library/data/*.png
-!templates-library/data/.gitkeep
-
 # ── 运行产物
 _smoke_out/
 **/_smoke_out/
 _tmp/
-
-# ── 生成物（脚本重跑即得）
-templates-library/utils/figkit/_out/
-templates-library/data/*.png

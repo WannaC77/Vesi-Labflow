@@ -13,10 +13,10 @@
 改写卡（`references/跨轨改写卡.md`）：数据单一正本｜匿名按目标轨重做｜评审口径不串台｜一稿多投禁令｜重写非复制。
 
 ## 装载 / Loading（指针，细节在正本）
-`track-config.md`、`track-config.md`（轨侧正本）；`VESI-CORE.md` 轨道节（L1）
+`track-config-B.md`（B 赛道自建，可选）、`track-config-C.md`（C 赛道自建，可选）（轨侧正本）；`VESI-CORE.md` 赛道节（L1）
 
 ## 门禁 / Gates
-匿名按目标轨重做（生科=三层扫描）；口径不串台（A 轨分数不得用于 B 轨判定）；数据可回溯 KB 正本
+匿名按目标轨重做（<目标赛道>=三层扫描）；口径不串台（A 轨分数不得用于 B 轨判定）；数据可回溯 KB 正本
 
 ## 降级 / Fallback
 无匿名脚本 → 手工三层扫描清单勾选；口径核对走 track-config 对应节

@@ -6,7 +6,7 @@ type: software
 authors:
   - name: "WannaC77"
     # 说明：署名使用 GitHub 用户名（不含真实姓名与机构）
-version: "1.0.0"
+version: "1.0.1"
 date-released: "2026-09-22"
 license: MIT
 license-url: "https://opensource.org/license/mit"

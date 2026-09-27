@@ -9,7 +9,7 @@ verify_bundle.py — 开源包结构自校验（通用版）
 用法:
   python scripts/verify_bundle.py                 # 以脚本位置反推仓根
   python scripts/verify_bundle.py --root <路径>   # 指定仓根
-  LABFLOW_ROOT=<路径> python scripts/verify_bundle.py   # 环境变量覆盖
+  LABFLOW_ROOT=<路径> python scripts/verify_bundle.py   # 环境变量覆盖（可选）
   python scripts/verify_bundle.py --selftest      # 自检判据本身（正/负夹具，负例必须 FAIL）
 退出码: 0 = 无失败项；1 = 存在失败项；2 = 用法错误
 
@@ -42,40 +42,30 @@ REQUIRED_SCRIPTS = ["assert_delivery_hygiene.py", "delivery_gate_check.py", "che
                     "transcribe_record.py", "verify_bundle.py", "batch_ocr.py", "README.md"]
 REQUIRED_TEMPLATES = ["校准台账模板.md", "锚注册卡模板.md"]
 
-# ── 包侧脱敏扫描（09 批 P1-1a：原判据只拦「本机用户目录」「源工作区路径」两个字面量，漏面过宽）
+# ── 包侧脱敏扫描（12 批 W-06 重构：原 NEEDLES 硬编码指纹表已撤销）
 #
-# ⚠️ 写法约定（改词族时必须遵守）：本文件落包前会过一次 paths/terms 机械替换，包内 G1/G2 门禁
-#    又会扫本文件自身 —— 直接写全字面量会被替换成占位词（判据自毁），并被自己的门禁判成泄漏。
-#    因此敏感字面量一律**片段拼接**（`"ir" + "inotecan"`）或**字符类拆形**（`[伊][利]替康`）书写：
-#    运行时拼回原词（rsplit/join 后语义等同），静态文本里取不到原字面量。
-_S = lambda *parts: "".join(parts)          # noqa: E731  片段拼接（见上方写法约定）
-NEEDLES = {
-    "drug_zh_a": _S("伊利", "替康"),
-    "drug_zh_b": _S("伊立", "替康"),
-    "drug_en": _S("ir", "inotecan"),
-    "drug_en_cap": _S("Irin", "otecan"),
-    "drug_code": _S("CPT", "-11"),
-    "metabolite": _S("sn-", "38"),
-    "metabolite_cap": _S("SN", "-38"),
-    "enzyme": _S("UGT", "1a1"),
-    "brand": _S("oni", "vyde"),
-    "generic": _S("topo", "tecan"),
-    "machine_id": _S("341", "48"),
-    "pipe_dirs": _S("目标赛道", "自动化"),
-    "pipe_dir2": _S("grant-", "research"),
-    "calendar": _S("2027", "-05"),
-}
-DESENS_RULES = [
-    ("本机路径", r"C:[\\/]Users|Desktop[\\/]" + _S("比", "赛")),
-    ("课题专名族", r"(?i)" + "|".join(map(re.escape, (NEEDLES["drug_zh_a"], NEEDLES["drug_zh_b"],
-                                                     NEEDLES["drug_en"], NEEDLES["drug_code"])))),
-    ("代谢物/酶族", r"(?i)" + "|".join(map(re.escape, (NEEDLES["metabolite"], NEEDLES["enzyme"])))),
-    ("同类已上市品种族", r"(?i)" + "|".join(map(re.escape, (NEEDLES["brand"], NEEDLES["generic"])))),
-    ("本机标识", re.escape(NEEDLES["machine_id"])),
-    ("私域流水线目录", r"(?i)" + "|".join(map(re.escape, (NEEDLES["pipe_dirs"], _S("大", "创自动化"), NEEDLES["pipe_dir2"])))),
+# 为什么撤销（11 号扫描报告§4.2 + 验收方裁定方案 A）：包内出现「本包应拦截的指纹清单」
+# 本身就是指纹泄露——开源读者从清单即可反推被拦截的具体对象。撤销后本层只保留「通用概念级」闸
+# （任何药、任何赛事都该拦的信号）；具体指纹闸在管线侧 strip 前注入（G2-BC-12…16，不开源）。
+# 本层因此不依赖任何硬编码字面量，也无需片段拼接写法。
+_S = lambda *parts: "".join(parts)          # noqa: E731  夹具字面拼接（静态文本无字面量；见上）
+GENERAL_CONCEPT_RULES = [
+    # 已上市参比注册号字面（任意药通用——脱敏后包内不该存在任何注册号字面）
+    ("已上市参比注册号", r"(?i)NDA\s*\d{5,6}(?!\d)|国药准字[HZSBF]\d"),
+    # 常见内标专名（+ [dD]10- 前后约束：前非拉丁、后跟中文/括号/空格）
+    ("常见内标专名", _S("美托", "洛尔|坎地沙", "坦|(?<![a-zA-Z])[dD]10-(?=[\\u4e00-\\u9fff(（\\s])")),
+    # 极值理化指纹（pKa 10.5 精确形态——11 扫描案宽正则被验收否决，会误伤合法 pKa 叙述）
+    ("极值理化指纹", r"(?i)pKa\s*[~≈]\s*10\.5"),
+    # 代谢专名成对（两个特征代谢专名并写为代谢对；单写不判——合法语境有同名单词）
+    ("代谢专名成对", _S("(?i)", "AP", "C\\s*/\\s*N", "PC|7-乙", "基-10")),
+    # 三段版本序列（可反推内部迭代史）
+    ("三段版本序列", r"v\d+(\.\d+)?\s*(→|->)\s*v\d+(\.\d+)?\s*(→|->)\s*v\d+"),
+    # 本机路径（通用概念级：任意药任何包都该拦的信号）
+    ("本机路径", r"C:[\\/]Users|Desktop[\\/](?=.{0,40}$)"),
     # 同值重复（塌陷）：同一占位在一行里出现 ≥2 次、其间只有分隔符 ⇒ 枚举不可用；
     # 第三条用**反向引用** `\1` 只抓「同一个轨道字母」，不误伤合法的 `<轨道 A> / <轨道 B>`。
     ("同值重复占位", r"`?候选药物 X`?\s*[/、]\s*`?候选药物 X`?|`?目标赛道`?\s*[/、]\s*`?目标赛道`?|`?<轨道\s*([ABC])>`?\s*[/、]\s*`?<轨道\s*\1>`?"),
+    # 裸年月（项目日历）
     ("裸年月（项目日历）", r"20\d\d-\d\d(?!-\d\d)(?!\d)"),
 ]
 SCAN_EXT = (".md", ".py", ".yaml", ".yml", ".txt", ".cff", ".sh", ".tex", ".sty", ".csv")
@@ -87,7 +77,7 @@ def scan_text_lines(rel, text):
     """单文件文本 → 命中列表（scan_desens 与 --selftest 共用同一判定）。"""
     out = []
     for i, line in enumerate(text.splitlines(), 1):
-        for name, pat in DESENS_RULES:
+        for name, pat in GENERAL_CONCEPT_RULES:
             if re.search(pat, line):
                 out.append((rel, i, name, line.strip()[:120]))
     return out
@@ -122,7 +112,7 @@ def check(desc, cond, level="fail", detail=""):
 def resolve_root(arg_root):
     if arg_root:
         return Path(arg_root).resolve()
-    env = os.environ.get("LABFLOW_ROOT") or os.environ.get("OPENLAB_ROOT")
+    env = os.environ.get("LABFLOW_ROOT")
     if env:
         return Path(env).resolve()
     return Path(__file__).resolve().parents[1]        # scripts/ → 仓根
@@ -136,21 +126,25 @@ def selftest():
     import shutil
     import tempfile
     cases = [
-        ("正例：干净文本", {"a.md": "普通文本，无敏感物\n"}, True),
-        ("负例：专名（首字母大写）", {"a.md": NEEDLES["drug_en_cap"] + " [MeSH]\n"}, False),
-        ("负例：专名（全小写）", {"a.md": NEEDLES["drug_en"] + " 参比制剂\n"}, False),
-        ("负例：代谢物族（小写）", {"a.md": "代谢物 " + NEEDLES["metabolite"] + " 的定量\n"}, False),
-        ("负例：代谢物族（大写）", {"a.md": NEEDLES["metabolite_cap"] + "G 结合物\n"}, False),
-        ("负例：酶族（混合大小写）", {"a.md": NEEDLES["enzyme"] + " 基因型\n"}, False),
-        ("负例：异名形态（品牌名/通用名）", {"a.md": NEEDLES["brand"] + " 与 " + NEEDLES["generic"] + " 对照\n"}, False),
-        ("负例：本机标识", {"a.md": "路径里含 " + NEEDLES["machine_id"] + "\n"}, False),
-        ("负例：私域流水线目录名", {"a.md": NEEDLES["pipe_dirs"] + "/notes.md\n"}, False),
-        ("负例：同值重复占位（塌陷）", {"a.md": _S("`目标赛道` / `目标", "赛道` / 生科") + "\n"}, False),
-        ("正例：可区分枚举不判（轨道 A/B/C）", {"a.md": "`<轨道 A>` / `<轨道 B>` / `<轨道 C>`\n"}, True),
-        ("负例：裸年月（项目日历）", {"a.md": NEEDLES["calendar"] + " 中期答辩\n"}, False),
-        ("正例：完整日期（版次戳）不判", {"a.md": "版本 v1.0（2026-09-21）\n"}, True),
-        ("正例：`YYYY-MM-DD` 占位不判", {"a.md": "条目命名 `YYYY-MM-DD-<主题>`\n"}, True),
-        ("正例：模式表自证不自伤（本文件自身零命中）", None, True),
+        ("正例：正例：正常文本", {"a.txt": "正常文本，无信号\n"}, True),
+        ("负例：已上市参比注册号（大写）", {"a.txt": _S("NDA", " 207793") + "\n"}, False),
+        ("负例：已上市参比注册号（小写）", {"a.txt": _S("nda", " 207793", " 补件") + "\n"}, False),
+        ("负例：已上市参比注册号（国药准字）", {"a.txt": _S("国药准字", "H", "20183021") + "\n"}, False),
+        ("负例：常见内标（内标专名A）", {"a.txt": _S("内标：", "美托", "洛尔") + "\n"}, False),
+        ("负例：常见内标（同位素内标-中文）", {"a.txt": _S("(", "d10-", "内标", ")") + "\n"}, False),
+        ("正例：同位素前缀-后跟拉丁（非内标语境）", {"a.txt": _S("d10-", "bearing", " 剂型名") + "\n"}, True),
+        ("负例：极值理化指纹", {"a.txt": _S("pKa", "~", "10.5") + "\n"}, False),
+        ("正例：合法 pKa 不判", {"a.txt": _S("pKa", " 4.7 与 pKa 8.1") + "\n"}, True),
+        ("负例：代谢专名成对", {"a.txt": _S("AP", "C / N", "PC", " 代谢对") + "\n"}, False),
+        ("正例：单 APC（免疫学）不判", {"a.txt": _S("AP", "C(抗原提呈细胞)") + "\n"}, True),
+        ("负例：三段版本序列", {"a.txt": _S("v4", " → ", "v5.1", " → ", "v7") + "\n"}, False),
+        ("正例：两段序列不判", {"a.txt": _S("rubric v1.5", " → ", "v2.1") + "\n"}, True),
+        ("负例：本机路径", {"a.txt": _S("C:/", "Users", "/某人/文档") + "\n"}, False),
+        ("负例：同值重复占位（塌陷）", {"a.txt": _S("`目标赛道` / `目标", "赛道` / 目标") + "\n"}, False),
+        ("正例：合法轨道枚举不判", {"a.txt": _S("`<轨道 A>` / `<轨道", " B>` / `<轨道 C>`") + "\n"}, True),
+        ("负例：裸年月（项目日历）", {"a.txt": _S("2027", "-05", " 中期答辩") + "\n"}, False),
+        ("正例：完整日期（版次戳）不判", {"a.txt": _S("版本 v1.0（20", "27-05-31）") + "\n"}, True),
+        ("正例：本层无指纹字面（自证自洁）", None, True),
     ]
     bad = 0
     for name, files, expect_pass in cases:
@@ -221,7 +215,7 @@ def main(argv=None):
     by_rule = {}
     for rel, lineno, name, line in hits:
         by_rule.setdefault(name, []).append("%s:%d" % (rel, lineno))
-    check("包侧脱敏零命中（%d 条模式）" % len(DESENS_RULES), not hits,
+    check("包侧脱敏零命中（%d 条模式）" % len(GENERAL_CONCEPT_RULES), not hits,
           detail="；".join("%s x%d（%s）" % (k, len(v), ", ".join(v[:3])) for k, v in sorted(by_rule.items())))
 
     # 输出

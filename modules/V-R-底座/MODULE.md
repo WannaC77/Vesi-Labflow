@@ -16,7 +16,7 @@
 `references/路径与资产清单.md`；`tools/env_check.py`；`tools/smoke_chain.py`；`references/故障速查卡.md`
 
 ## 门禁 / Gates
-env_check 可跑（档位明示）；脚本冒烟 rc=0（生科 12 + 目标赛道 6 + tools 全件）；故障卡可检索
+env_check 可跑（档位明示）；脚本冒烟 rc=0（<目标赛道> 12 + 目标赛道 6 + tools 全件）；故障卡可检索
 
 ## 降级 / Fallback
 手工核 ENGINE §6 环境卡；故障按卡中「现象→处置」执行

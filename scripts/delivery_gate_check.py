@@ -3,7 +3,7 @@
 """
 delivery_gate_check.py — 交付门禁机器化核对（多赛道通用）
 
-判定规则唯一权威正本: <校准台账> 的《放行判定规则》S8-GATE-v1.1 §5.1/§5.2
+判定规则唯一权威正本: <校准台账> 的《放行判定规则》DELIVERY-GATE-v1 §5.1/§5.2（12 批 W-07：中性门禁名）
 输入模板: scripts/delivery_gate.check.yaml（复制后填写本轮四个分件成绩单 + 跨件一致性 + 硬门）
 
 判定式（2026-09-20 同步 §5.2 破坏性订正 + §5.4.1 独立轮锚条款）:
@@ -26,7 +26,7 @@ delivery_gate_check.py — 交付门禁机器化核对（多赛道通用）
 
 退出码: 0 = 合体放行 / 自测全过;  1 = 合体不放行 / 自测失败;  2 = 输入或用法错误;
         3 = 依赖缺失未执行（缺 PyYAML；或 --selftest 出现 SKIP —— 未执行 ≠ 通过）
-落盘: 2026-09-19（S8 扩建 Phase B）
+落盘: 2026-09-19（交付门禁扩建 Phase B）
 """
 import argparse
 import os
@@ -100,11 +100,11 @@ def evaluate(cfg):
 
     results = {"pieces": [], "bundle_ok": False, "reasons": [],
                "cross_doc_ok": False, "hard_gates_ok": False}
-    lines = ["[S8-GATE-v1.1 机器化核对]",
+    lines = ["[DELIVERY-GATE-v1 机器化核对]",
              "gate_version: {}    standard_version: {}    round_type: {}".format(
                  cfg.get("gate_version"), std_ver, round_type)]
-    if cfg.get("gate_version") not in (None, "S8-GATE-v1.1"):
-        lines.append("  ⚠️ 注意: gate_version 非 S8-GATE-v1.1（本脚本仍按 v1.1 规则核对）")
+    if cfg.get("gate_version") not in (None, "DELIVERY-GATE-v1"):
+        lines.append("  ⚠️ 注意: gate_version 非 DELIVERY-GATE-v1（本脚本仍按 v1 规则核对）")
     if not std_ok:
         lines.append("  ❌ standard_version 缺失 —— 没有版本号的分数不作数（全部成绩单作废）")
 
@@ -221,8 +221,8 @@ def evaluate(cfg):
 
 def _base_cfg():
     return {
-        "gate_version": "S8-GATE-v1.1",
-        "standard_version": "S8-STD-v1.4",
+        "gate_version": "DELIVERY-GATE-v1",
+        "standard_version": "DELIVERY-STD-v1.4",
         "round_type": WB_ROUND,
         "pieces": [
             {"id": "综述", "wb_score": 91.2, "p0_closed": True, "anchor": 84.0,
@@ -398,7 +398,7 @@ def main(argv=None) -> int:
 
     ap = argparse.ArgumentParser(
         prog="delivery_gate_check.py",
-        description="交付门禁机器化核对（S8-GATE-v1.1）：填写 check.yaml 后核对四件成绩单 + 跨件一致性 + 硬门",
+        description="交付门禁机器化核对（DELIVERY-GATE-v1）：填写 check.yaml 后核对四件成绩单 + 跨件一致性 + 硬门",
         epilog="退出码: 0=合体放行/自测全过；1=不放行/自测失败；2=输入或用法错误；3=依赖缺失未执行（未执行 ≠ 通过）")
     ap.add_argument("check_yaml", nargs="?", help="填写后的 check.yaml（模板：scripts/delivery_gate.check.yaml）")
     ap.add_argument("--selftest", action="store_true", help="内置自测（含缺件/坏 YAML 负例）")

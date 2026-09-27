@@ -35,7 +35,7 @@
 | V-M5 | PK/领域台 ★ | NCA/房室/释放/排泄 | `workflows/05–07` | NCA / 房室 / 释放拟合 / 排泄累积 报告字段 | 参数完整+口径声明；拟合优度证据；包裹/游离质控要点 | 外部软件手工表 + 核对 |
 | V-M6 | 图件车间 FIG | 出版级图（三闸） | 图件规范；`tools/fig_samples/`（图件样例）· `templates/图注模板.md`；`workflows/08` 图型 | PNG+PDF+SVG + 图注 | audit / figcheck / vision 三闸（无 vision 则双闸+人检） | 代码出图 + 人工复核 |
 | V-M7 | 论文装配 PAPER | IMRaD→docx | `workflows/09`；`scripts/assert_delivery_hygiene.py` | 论文/章节 + 自查 + 引用表 | 逐节 checklist；Claim-Evidence；hygiene FAIL=0；**docx 禁令见故障卡（另存 styleId 回退）** | 纯文本/md 装配 + 门禁清单 |
-| V-M8 | 三轨改写 TRACK | 母版→目标轨 | `track-config.md`、`track-config.md` + CORE 轨道节 | 目标轨材料 | 匿名按目标轨重做；口径不串台；一稿多投禁令；数据单一正本 | 手工过改写卡 |
+| V-M8 | 多赛道改写 TRACK | 母版→目标赛道 | `track-config-B.md`（B 赛道自建，可选）、`track-config-C.md`（C 赛道自建，可选） + CORE 赛道节 | 目标赛道材料 | 匿名按目标赛道重做；口径不串台；一稿多投禁令；数据单一正本 | 手工过改写卡 |
 | V-M9 | 申报与答辩 APPLY | 申报书/PPT/QA | `templates/申报书线/申报书写作工作流.md` | 申报书 / PPT / QA | 格式对标；六栏结构；自查表 | 纯 md 版 + 人检 |
 | V-M10 | 校准钩子 CAL | 只读挂接 L2 锚协议 | `references/outcome-anchor-protocol.md`（**存在性**） | 无（声明与边界） | 只声明「存在校准协议文件、生成侧只读挂接」；个人校准 ≠ 模块门禁 | 不挂接亦可走全链 |
 | V-M11 | 编排器 ORCH | runbook+交接卡 | 本文件 §4/§7 | 交接卡 | 每交付一次交接记录 | 口述交接 + 记录 |
@@ -61,7 +61,7 @@ M10 校准 ⇄ 各模块（L2 只读挂接，不进 L0 必载）
 | PK | `tools/{nca,compartment_fit,release_fit}.py` 合成断言 + 参数表 | PASS+完整 | 报告 |
 | 图件 | 三闸/双闸 | 过闸 | 记录 |
 | docx | `assert_delivery_hygiene` | FAIL=0 | 输出 |
-| 生科提交 | 匿名三层 + 格式 | 全过 | 扫描记录 |
+| <目标赛道>提交 | 匿名三层 + 格式 | 全过 | 扫描记录 |
 | 跨轨 | 改写卡勾选 | 全过 | 卡 |
 | **未来兼容** | 新建 L0 无用户绝对路径（盘符用户目录 / 本地应用数据目录等环境变量形态路径）；资产清单可解析 | 零命中 | grep 输出 |
 
@@ -86,12 +86,12 @@ M10 校准 ⇄ 各模块（L2 只读挂接，不进 L0 必载）
 | 工作流共享层 | `workflows/_SHARED.md` | — | 全域 | L0 既有 | ✅ |
 | 材料吸收层 | `workflows/D-ABSORB.md` | — | 全域 | L0 既有 | ✅ |
 | 冷水证据 | `references/cold-water-evidence.md` | — | V-M1/M6 | L0 既有 | ✅ |
-| 校准协议（只读挂接） | `references/outcome-anchor-protocol.md` | v1.7 | V-M10 | L0(协议) / L2(数据) | ✅ |
+| 校准协议（只读挂接） | `references/outcome-anchor-protocol.md` | v1.0（抽象版） | V-M10 | L0(协议) / L2(数据) | ✅ |
 | 行为测试最小集 | `references/behavioral-tests-minimal.md` | — | V-R | L0 既有 | ✅ |
 | 申报书线 | `templates/申报书线/`（申报书写作工作流 + 模板 + 生成脚本 + 一键生成工作流） | — | V-M9 | L0 既有 | ✅ |
 | 轨侧脚本（本仓 `scripts/`） | `scripts/`（交付门禁集：卫生断言 / 剂量换算 / 记录转写 / 元数据清理 / 跨文档一致性 / 自然度 / 重复预检 / 引用编号 / 包结构校验 / 元自检） | L0 既有 | ✅ |
 | 轨侧脚本（并轨件） | `scripts/`（15 件 .py：verify_bundle / consistency_check / naturalness_check / precheck_similarity / ref_numberizer / selftest_scripts / assert_delivery_hygiene / check_dose / clean_pdf_meta / crop_zoom / dump_docx_full / transcribe_record / tile_image / batch_ocr / delivery_gate_check） | — | V-M8/R | L0 既有 | ✅ |
-| 轨侧配置 | `track-config.md`、`track-config.md` | — | V-M8 | L1 轨侧 | ✅ |
+| 轨侧配置 | `track-config-B.md`、`track-config-C.md`（各自独立自建，可选） | — | V-M8 | L1 轨侧 | ✅ |
 | 模块规格件 ×12 | `modules/V-M*/MODULE.md`（四件：目的/接口/门禁/降级） | v1.0 | 各模块 | L0 | ✅ |
 | 模板集 ×13 | `templates/`（精读笔记 / 证据表 / 设计卡×4 / 实验记录 / 图注 / Claim-Evidence / QA题库 / 申报-中期-结题映射 / 报告模板-排泄累积 / 报告模板-组织分布与靶向） | v1.0 | V-M1–M9 | L0 | ✅ |
 | 工具集 | `tools/`（env_check / stats_pipeline / smoke_chain / nca / compartment_fit / release_fit / fig_samples×8） | v1.0 | V-M4/M5/M6/R | L0 | ✅ |
