@@ -6,8 +6,8 @@ type: software
 authors:
   - name: "WannaC77"
     # 说明：署名使用 GitHub 用户名（不含真实姓名与机构）
-version: "1.0.1"
-date-released: "2026-09-22"
+version: "1.1.0"
+date-released: "2026-09-27"
 license: MIT
 license-url: "https://opensource.org/license/mit"
 repository-code: "https://github.com/WannaC77/Vesi-Labflow"

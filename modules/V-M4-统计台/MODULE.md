@@ -22,4 +22,4 @@
 按 workflows/08 速查表手工走 GraphPad/手算，报告标注 `[降级]` 与所用方法
 
 ## 样例 / Example（合成或去敏）
-`stats_pipeline.py --selftest`：合成数据 7 组断言（t/MWU/ANOVA/配对/n=3 下限/Holm）全部可跑
+`stats_pipeline.py --selftest`：合成数据 13 组断言（T1–T13：t/MWU/ANOVA/配对宽表+长表/n=3 下限/Holm/闭式与已知真值对质）全部可跑

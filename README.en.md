@@ -44,6 +44,8 @@ python tools/nca.py --selftest            # non-compartmental analysis (per-subj
 python tools/stats_pipeline.py --selftest # statistics pipeline (paired long-table case)
 ```
 
+- **Install via pip (v1.1.0+)**: `pip install vesi-labflow[all]` — console commands `vesi-env-check`, `vesi-smoke-chain`, `vesi-nca`, `vesi-stats-pipeline`, etc. Package data lands in `_tree/` (override via `LABFLOW_ROOT`). Docs: https://wannac77.github.io/Vesi-Labflow/
+
 See [`QUICKSTART.md`](QUICKSTART.md) for the 5-minute path and [`AGENTS.md`](AGENTS.md) if you are a code agent.
 
 ## What you get in 5 minutes

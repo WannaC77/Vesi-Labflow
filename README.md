@@ -102,6 +102,7 @@ Vesi-Labflow/
 - **Python 3.11+**（工具的运行基线；不用 3.12 独占语法）。
 - **依赖**：`requirements.txt`（**分层**：必需 = numpy / scipy / pandas；交付门禁线 = PyYAML / pypdf；可选 = matplotlib / python-docx / Pillow；缺件按模块「降级」列处理）。
 - 建议自建虚拟环境（`<venv>/`）并在其中安装依赖，避免污染系统解释器。
+- **pip 直装（v1.1.0+，可选）**：`pip install vesi-labflow[all]`；命令入口 `vesi-env-check` / `vesi-smoke-chain` / `vesi-nca` / `vesi-stats-pipeline` / `vesi-compartment-fit` / `vesi-release-fit`。安装态数据在包内 `_tree/`（`LABFLOW_ROOT` 可指向自建树）。文档站：https://wannac77.github.io/Vesi-Labflow/
 - **可选件**：OCR / 视觉能力、Word 自动化（Windows 专有）、LaTeX、中文字体。**缺件不阻塞**——模块表有「降级」列，缺件按降级路径执行并标 `[降级]`，工具输出 `SKIP` 并说明原因。
 - **无服务、无数据库、无 API key、无强制联网**（联网仅用于文献检索，且有离线降级路径）。
 

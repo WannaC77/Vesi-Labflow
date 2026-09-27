@@ -1,0 +1,75 @@
+# Vesi-Labflow — 打包元数据（v1.1.0 特性批：pip 可安装）
+# 注：包目录为纯构建产物——改动请走项目构建流程，勿直编包内副本。
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vesi-labflow"
+version = "1.1.0"
+description = "药学与生命科学科研工作流：文献 → 实验设计 → 记录 → 统计 → 论文装配（带门禁与可核查证据链）"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{ name = "WannaC77" }]
+keywords = ["life-sciences", "pharmacokinetics", "nca", "statistics", "research-workflow"]
+[project.urls]
+Homepage = "https://github.com/WannaC77/Vesi-Labflow"
+
+[project.optional-dependencies]
+all = [
+  "numpy>=1.24,<3", "scipy>=1.10,<2", "pandas>=2.0,<3", "PyYAML>=6,<7", "pypdf>=4,<7",
+  "matplotlib>=3.7,<4", "python-docx>=1.1,<2", "Pillow>=10,<12",
+  "pywin32>=306; sys_platform == \"win32\"",
+]
+
+[project.scripts]
+vesi-env-check = "vesi_labflow.cli:env_check"
+vesi-smoke-chain = "vesi_labflow.cli:smoke_chain"
+vesi-nca = "vesi_labflow.cli:nca"
+vesi-stats-pipeline = "vesi_labflow.cli:stats_pipeline"
+vesi-compartment-fit = "vesi_labflow.cli:compartment_fit"
+vesi-release-fit = "vesi_labflow.cli:release_fit"
+vesi-verify-bundle = "vesi_labflow.cli:verify_bundle"
+vesi-verify-manifest = "vesi_labflow.cli:verify_manifest"
+
+[tool.hatch.build]
+exclude = ["**/__pycache__", "**/*.pyc", "**/_smoke_out", "**/_out"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["vesi_labflow"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"examples" = "vesi_labflow/_tree/examples"
+"tools" = "vesi_labflow/_tree/tools"
+"scripts" = "vesi_labflow/_tree/scripts"
+"references" = "vesi_labflow/_tree/references"
+"workflows" = "vesi_labflow/_tree/workflows"
+"modules" = "vesi_labflow/_tree/modules"
+"templates" = "vesi_labflow/_tree/templates"
+"docs" = "vesi_labflow/_tree/docs"
+"kb" = "vesi_labflow/_tree/kb"
+".github" = "vesi_labflow/_tree/.github"
+"VESI-CORE.md" = "vesi_labflow/_tree/VESI-CORE.md"
+"VESI-ENGINE.md" = "vesi_labflow/_tree/VESI-ENGINE.md"
+"AGENTS.md" = "vesi_labflow/_tree/AGENTS.md"
+"BOOT.md" = "vesi_labflow/_tree/BOOT.md"
+"CHANGELOG.md" = "vesi_labflow/_tree/CHANGELOG.md"
+"CITATION.cff" = "vesi_labflow/_tree/CITATION.cff"
+"CODE_OF_CONDUCT.md" = "vesi_labflow/_tree/CODE_OF_CONDUCT.md"
+"CONTRIBUTING.md" = "vesi_labflow/_tree/CONTRIBUTING.md"
+"LICENSE" = "vesi_labflow/_tree/LICENSE"
+"LICENSE-DOCS" = "vesi_labflow/_tree/LICENSE-DOCS"
+"MAINTAINERS.md" = "vesi_labflow/_tree/MAINTAINERS.md"
+"QUICKSTART.md" = "vesi_labflow/_tree/QUICKSTART.md"
+"README.md" = "vesi_labflow/_tree/README.md"
+"README.en.md" = "vesi_labflow/_tree/README.en.md"
+"SECURITY.md" = "vesi_labflow/_tree/SECURITY.md"
+"SUPPORT.md" = "vesi_labflow/_tree/SUPPORT.md"
+"THIRD-PARTY.md" = "vesi_labflow/_tree/THIRD-PARTY.md"
+"learnings.md" = "vesi_labflow/_tree/learnings.md"
+"requirements.txt" = "vesi_labflow/_tree/requirements.txt"
+".editorconfig" = "vesi_labflow/_tree/.editorconfig"
+".gitattributes" = "vesi_labflow/_tree/.gitattributes"
+".gitignore" = "vesi_labflow/_tree/.gitignore"
+".pre-commit-config.yaml" = "vesi_labflow/_tree/.pre-commit-config.yaml"

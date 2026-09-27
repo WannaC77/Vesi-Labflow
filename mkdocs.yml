@@ -1,0 +1,48 @@
+site_name: Vesi-Labflow
+site_description: 药学与生命科学科研工作流引擎——可复现、门禁驱动
+site_url: https://wannac77.github.io/Vesi-Labflow/
+repo_url: https://github.com/WannaC77/Vesi-Labflow
+repo_name: WannaC77/Vesi-Labflow
+edit_uri: edit/main/docs/
+copyright: MIT Licensed · 署名 WannaC77
+
+theme:
+  name: material
+  language: zh
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      toggle:
+        icon: material/weather-night
+        name: 切到深色
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      toggle:
+        icon: material/weather-sunny
+        name: 切到浅色
+
+nav:
+  - 首页: index.md
+  - 5 分钟上手: quickstart.md
+  - 示例: examples.md
+  - 工作流索引: workflows.md
+  - 工具索引: tools.md
+  - 治理与许可: governance.md
+
+markdown_extensions:
+  - admonition
+  - tables
+  - attr_list
+  - toc:
+      permalink: true
+
+plugins:
+  - search

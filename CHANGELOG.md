@@ -2,6 +2,21 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## v1.1.0 — 特性批（2026-09-27）
+
+**定位**：可安装 / 可上手 / 可浏览三件套——`pip install` 直装（含命令入口）、`examples/` 可运行示例、文档站（GitHub Pages）。内容与 v1.0.x 全兼容。
+
+**新增**
+- **pip 可安装**：`pyproject.toml` + 命令入口（`vesi-env-check` / `vesi-smoke-chain` / `vesi-nca` / `vesi-stats-pipeline` / `vesi-compartment-fit` / `vesi-release-fit` / `vesi-verify-bundle` / `vesi-verify-manifest`）；安装态数据落包内 `_tree/`，`LABFLOW_ROOT` 可覆盖根路径
+- **examples/**：3 个全合成数据示例（NCA / 统计 / 释放拟合；随 CI 冒烟）
+- **文档站**：mkdocs-material 六页（同左）；`.github/workflows/docs.yml` 自动部署
+- **CI**：新增「示例冒烟」步骤
+
+**修复**
+- 计算工具（`nca` / `stats_pipeline` / `compartment_fit` / `release_fit`）补 rc=3 依赖护栏：裸环境从裸栈（rc=1）改为「未执行 + 补装提示」（rc=3），与 README/CONTRIBUTING 退出码约定一致
+
+**兼容性**：无破坏性变更；退出码契约不变（`0` 通过 · `1` 失败 · `2` 用法 · `3` 依赖缺失未执行）。
+
 ## v1.0.1 — 验收整改（2026-09-27）
 
 **定位**：第三方验收（《11-全量扫描》）+ 复核后的整改公开发行——内容与 v1.0.0 全兼容，无新增功能。

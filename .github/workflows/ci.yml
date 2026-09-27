@@ -45,3 +45,11 @@ jobs:
 
       - name: 文档-磁盘一致性自证（verify_manifest）
         run: python scripts/verify_manifest.py --root .
+
+      - name: 示例冒烟（examples/*.py · 合成数据真跑）
+        run: |
+          set -e
+          for f in examples/*.py; do
+            echo "== $f"
+            python "$f"
+          done
