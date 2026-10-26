@@ -19,4 +19,4 @@ Pillow>=10,<12        # 图像裁剪 / 切块（scripts/crop_zoom.py · tile_ima
 # ── 按需自装（T1 文档线 / T2 专业件；缺件降级可走）
 #    openpyxl（Excel 读写） · pymupdf（PDF 回读）
 #    pywin32（Windows 专有：Word COM 管线；tools/env_check.py 仅探测不强制，缺件走降级）
-pywin32>=306; sys_platform == "win32"
+pywin32>=312; sys_platform == "win32"
